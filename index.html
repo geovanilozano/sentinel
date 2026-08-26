@@ -1,0 +1,983 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="Documento tecnico de la plataforma Sentinel/SAMS: gobierno de datos, modelo de datos e implementacion matematica de PR, EPI, disponibilidad Anexo 9 y diagnostico energetico.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%E2%98%80%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<title>Sentinel · Del dato a la ecuación</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+
+<style>
+:root{
+  --ground:#F1F4F7;
+  --surface:#FFFFFF;
+  --surface-2:#E7ECF1;
+  --ink:#121920;
+  --ink-2:#3B4751;
+  --muted:#6A7783;
+  --line:#D2D9E1;
+  --line-soft:#E2E7ED;
+  --accent:#0E6C88;
+  --accent-ink:#095065;
+  --accent-soft:#DBEBF2;
+  --energy:#A96908;
+  --energy-soft:#F6E9D4;
+  --ok:#2B7A56;
+  --crit:#A93A33;
+  --crit-soft:#F6DFDD;
+  --shadow:0 1px 2px rgba(18,25,32,.05), 0 8px 24px -16px rgba(18,25,32,.28);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+  --ground:#0C1116;
+  --surface:#131A21;
+  --surface-2:#1B232B;
+  --ink:#E5EAEF;
+  --ink-2:#B5C0CB;
+  --muted:#84919E;
+  --line:#27313A;
+  --line-soft:#1F272F;
+  --accent:#4FB3CE;
+  --accent-ink:#8FD3E6;
+  --accent-soft:#10303D;
+  --energy:#DFA245;
+  --energy-soft:#33260F;
+  --ok:#5CB98B;
+  --crit:#E0736B;
+  --crit-soft:#361E1C;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0C1116;
+  --surface:#131A21;
+  --surface-2:#1B232B;
+  --ink:#E5EAEF;
+  --ink-2:#B5C0CB;
+  --muted:#84919E;
+  --line:#27313A;
+  --line-soft:#1F272F;
+  --accent:#4FB3CE;
+  --accent-ink:#8FD3E6;
+  --accent-soft:#10303D;
+  --energy:#DFA245;
+  --energy-soft:#33260F;
+  --ok:#5CB98B;
+  --crit:#E0736B;
+  --crit-soft:#361E1C;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+}
+
+/* Eleccion explicita del lector — va despues, por eso gana */
+:root[data-doc-theme="light"]{
+  --ground:#F1F4F7;
+  --surface:#FFFFFF;
+  --surface-2:#E7ECF1;
+  --ink:#121920;
+  --ink-2:#3B4751;
+  --muted:#6A7783;
+  --line:#D2D9E1;
+  --line-soft:#E2E7ED;
+  --accent:#0E6C88;
+  --accent-ink:#095065;
+  --accent-soft:#DBEBF2;
+  --energy:#A96908;
+  --energy-soft:#F6E9D4;
+  --ok:#2B7A56;
+  --crit:#A93A33;
+  --crit-soft:#F6DFDD;
+  --shadow:0 1px 2px rgba(18,25,32,.05), 0 8px 24px -16px rgba(18,25,32,.28);
+}
+:root[data-doc-theme="dark"]{
+  --ground:#0C1116;
+  --surface:#131A21;
+  --surface-2:#1B232B;
+  --ink:#E5EAEF;
+  --ink-2:#B5C0CB;
+  --muted:#84919E;
+  --line:#27313A;
+  --line-soft:#1F272F;
+  --accent:#4FB3CE;
+  --accent-ink:#8FD3E6;
+  --accent-soft:#10303D;
+  --energy:#DFA245;
+  --energy-soft:#33260F;
+  --ok:#5CB98B;
+  --crit:#E0736B;
+  --crit-soft:#361E1C;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--ground);
+  color:var(--ink);
+  font-family:"Source Serif 4",Georgia,"Times New Roman",serif;
+  font-size:17px;
+  line-height:1.62;
+  margin:0;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:Archivo,"Helvetica Neue",Arial,sans-serif;text-wrap:balance;margin:0;line-height:1.15;letter-spacing:-.015em}
+code,.mono,.formula,table.data td.num{font-family:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace}
+a{color:var(--accent);text-underline-offset:3px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
+
+/* ── shell ───────────────────────────────────────────── */
+.shell{max-width:1240px;margin:0 auto;padding:0 24px 96px;display:grid;grid-template-columns:1fr;gap:0}
+@media(min-width:1080px){
+  .shell{grid-template-columns:232px minmax(0,1fr);column-gap:56px;align-items:start}
+  .masthead{grid-column:1/-1}
+}
+
+/* ── masthead ────────────────────────────────────────── */
+.masthead{padding:64px 0 40px;border-bottom:1px solid var(--line)}
+.kicker{
+  font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--accent);margin:0 0 22px
+}
+.masthead h1{font-size:clamp(38px,6.2vw,68px);font-weight:700;max-width:16ch}
+.masthead .lede{
+  font-size:clamp(18px,2.2vw,21px);color:var(--ink-2);max-width:62ch;margin:22px 0 0
+}
+.meta-row{
+  display:flex;flex-wrap:wrap;gap:10px 28px;margin-top:32px;
+  font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--muted)
+}
+.meta-row b{color:var(--ink-2);font-weight:500}
+
+/* ── toc ─────────────────────────────────────────────── */
+.toc{display:none}
+@media(min-width:1080px){
+  .toc{display:block;position:sticky;top:32px;padding-top:44px}
+  .toc ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+  .toc a{
+    display:grid;grid-template-columns:26px 1fr;gap:8px;text-decoration:none;
+    font-family:Archivo,sans-serif;font-size:13.5px;line-height:1.35;color:var(--ink-2);
+    padding:6px 8px;border-radius:4px;border-left:2px solid transparent
+  }
+  .toc a span{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--muted);padding-top:1px}
+  .toc a:hover{background:var(--surface);color:var(--ink);border-left-color:var(--accent)}
+  .toc .toc-label{
+    font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;
+    color:var(--muted);padding:0 8px 12px
+  }
+}
+
+/* ── sections ────────────────────────────────────────── */
+main{padding-top:44px;min-width:0}
+section{padding:0 0 12px;scroll-margin-top:24px}
+section + section{margin-top:56px;padding-top:44px;border-top:1px solid var(--line-soft)}
+.sec-num{
+  font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.14em;
+  color:var(--accent);display:block;margin-bottom:12px
+}
+section > h2{font-size:clamp(25px,3.4vw,33px);font-weight:600;max-width:22ch}
+section > .intro{color:var(--ink-2);max-width:66ch;margin:16px 0 0}
+h3{font-size:19px;font-weight:600;margin:38px 0 0;max-width:34ch}
+h4{font-size:14px;font-weight:600;margin:26px 0 0;letter-spacing:0}
+p{max-width:68ch;margin:14px 0 0}
+ul,ol{max-width:68ch;margin:14px 0 0;padding-left:22px}
+li{margin-top:6px}
+li::marker{color:var(--muted)}
+strong{font-weight:600}
+em.term{font-style:normal;font-family:"IBM Plex Mono",monospace;font-size:.88em;color:var(--ink-2);background:var(--surface-2);padding:1px 5px;border-radius:3px}
+p .mono,li .mono,td .mono{
+  font-size:.88em;color:var(--ink);background:var(--surface-2);
+  padding:1px 5px;border-radius:3px;overflow-wrap:break-word
+}
+
+/* ── pipeline ────────────────────────────────────────── */
+.pipeline{display:grid;gap:10px;margin-top:28px}
+@media(min-width:720px){.pipeline{grid-template-columns:repeat(4,1fr)}}
+.stage{
+  background:var(--surface);border:1px solid var(--line);border-radius:5px;
+  padding:16px 16px 18px;position:relative;box-shadow:var(--shadow)
+}
+.stage::before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:var(--accent);border-radius:5px 0 0 5px}
+.stage:first-child::before{background:var(--energy)}
+.stage .st-n{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase}
+.stage .st-t{font-family:Archivo,sans-serif;font-weight:600;font-size:16px;margin-top:8px;display:block}
+.stage .st-d{font-size:14px;color:var(--ink-2);margin-top:8px;line-height:1.5}
+.stage .st-tech{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--muted);margin-top:12px;display:block}
+
+/* ── layer stack ─────────────────────────────────────── */
+.stack{margin-top:28px;border:1px solid var(--line);border-radius:5px;overflow:hidden;background:var(--surface)}
+.layer{display:grid;grid-template-columns:1fr;gap:4px;padding:16px 18px;border-top:1px solid var(--line-soft)}
+.layer:first-child{border-top:0}
+@media(min-width:640px){.layer{grid-template-columns:150px minmax(0,1fr);gap:20px;align-items:baseline}}
+.layer .l-name{font-family:Archivo,sans-serif;font-weight:600;font-size:14.5px}
+.layer .l-name small{display:block;font-family:"IBM Plex Mono",monospace;font-weight:400;font-size:10.5px;color:var(--muted);letter-spacing:.1em;margin-top:3px}
+.layer .l-body{font-size:14.5px;color:var(--ink-2);line-height:1.55}
+.layer:nth-child(1){background:var(--energy-soft)}
+.layer:nth-child(1) .l-body{color:var(--ink)}
+
+/* ── formula ─────────────────────────────────────────── */
+.formula{
+  margin-top:22px;background:var(--surface);border:1px solid var(--line);
+  border-left:3px solid var(--accent);border-radius:0 5px 5px 0;padding:16px 18px;
+  box-shadow:var(--shadow)
+}
+.formula .f-head{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
+.formula .f-name{font-family:Archivo,sans-serif;font-weight:600;font-size:14px}
+.formula .f-eq{
+  font-size:14.5px;line-height:1.75;color:var(--ink);overflow-x:auto;
+  padding-bottom:2px;white-space:pre-wrap
+}
+.formula .f-note{font-size:14px;color:var(--ink-2);margin-top:12px;line-height:1.5;max-width:66ch}
+.formula.energy{border-left-color:var(--energy)}
+.formula.crit{border-left-color:var(--crit)}
+
+.chip{
+  font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  padding:3px 7px;border-radius:3px;background:var(--accent-soft);color:var(--accent-ink);white-space:nowrap
+}
+.chip.norm{background:var(--surface-2);color:var(--muted)}
+.chip.energy{background:var(--energy-soft);color:var(--energy)}
+.chip.crit{background:var(--crit-soft);color:var(--crit)}
+
+/* ── tables ──────────────────────────────────────────── */
+.tw{overflow-x:auto;margin-top:24px;border:1px solid var(--line);border-radius:5px;background:var(--surface)}
+table.data{border-collapse:collapse;width:100%;font-size:14px;min-width:520px}
+table.data th{
+  font-family:"IBM Plex Mono",monospace;font-weight:500;font-size:10.5px;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--muted);text-align:left;padding:12px 14px;
+  border-bottom:1px solid var(--line);white-space:nowrap
+}
+table.data td{padding:11px 14px;border-bottom:1px solid var(--line-soft);vertical-align:top;color:var(--ink-2);line-height:1.5;text-wrap:pretty}
+table.data tr:last-child td{border-bottom:0}
+table.data td:first-child{color:var(--ink);font-weight:600;font-family:Archivo,sans-serif;font-size:13.5px;padding-right:20px;min-width:9ch}
+table.data td.num{text-align:right;font-variant-numeric:tabular-nums;font-size:13px;white-space:nowrap}
+table.data td.mono{font-size:12.5px;color:var(--ink);white-space:normal;overflow-wrap:break-word}
+.st-dot{display:inline-flex;align-items:center;gap:6px;font-family:"IBM Plex Mono",monospace;font-size:11px;white-space:nowrap}
+.st-dot::before{content:"";width:7px;height:7px;border-radius:50%;flex:none}
+.st-dot.on::before{background:var(--ok)}
+.st-dot.av::before{background:var(--energy)}
+.st-dot.pl::before{background:var(--muted)}
+
+/* ── callout ─────────────────────────────────────────── */
+.callout{
+  margin-top:26px;padding:18px 20px;border-radius:5px;background:var(--surface);
+  border:1px solid var(--line);border-top:3px solid var(--crit)
+}
+.callout.rule{border-top-color:var(--accent)}
+.callout .c-title{font-family:Archivo,sans-serif;font-weight:600;font-size:14.5px;margin-bottom:8px}
+.callout p{font-size:15px;margin-top:8px;max-width:64ch}
+.callout p:first-of-type{margin-top:0}
+
+/* ── grid of cards ───────────────────────────────────── */
+.cards{display:grid;gap:12px;margin-top:24px}
+@media(min-width:700px){.cards{grid-template-columns:1fr 1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:5px;padding:16px 18px}
+.card h4{margin:0 0 8px}
+.card p{font-size:14.5px;margin:0;color:var(--ink-2);line-height:1.55;max-width:none}
+.card .c-tag{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:8px}
+
+/* ── selector de tema ────────────────────────────────── */
+.theme-toggle{
+  position:fixed;right:20px;bottom:20px;z-index:60;
+  display:inline-flex;align-items:center;gap:8px;
+  padding:9px 15px;border-radius:999px;cursor:pointer;
+  background:var(--surface);color:var(--ink-2);
+  border:1px solid var(--line);box-shadow:var(--shadow);
+  font-family:Archivo,"Helvetica Neue",Arial,sans-serif;font-size:12.5px;font-weight:600;
+  transition:color .15s ease,border-color .15s ease
+}
+.theme-toggle:hover{color:var(--ink);border-color:var(--accent)}
+.theme-toggle .tt-icon{font-size:13px;line-height:1}
+@media(prefers-reduced-motion:reduce){.theme-toggle{transition:none}}
+
+/* ── steps ───────────────────────────────────────────── */
+ol.steps{list-style:none;padding:0;counter-reset:s;margin-top:22px;max-width:70ch}
+ol.steps li{
+  counter-increment:s;position:relative;
+  margin-top:0;padding:12px 0 12px 42px;border-bottom:1px solid var(--line-soft);
+  font-size:15px;line-height:1.6;color:var(--ink-2)
+}
+ol.steps li:last-child{border-bottom:0}
+ol.steps li::before{
+  content:counter(s,decimal-leading-zero);position:absolute;left:0;top:16px;
+  font-family:"IBM Plex Mono",monospace;font-size:11px;line-height:1;color:var(--accent);
+  font-variant-numeric:tabular-nums
+}
+ol.steps li b{color:var(--ink);font-weight:600}
+
+footer{
+  margin-top:72px;padding-top:28px;border-top:1px solid var(--line);
+  font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--muted);line-height:1.8
+}
+@media(min-width:1080px){footer{grid-column:2}}
+
+/* ── impresion / PDF ─────────────────────────────────── */
+@media print{
+  :root,:root[data-theme="dark"],:root[data-doc-theme="dark"]{
+  --ground:#F1F4F7;
+  --surface:#FFFFFF;
+  --surface-2:#E7ECF1;
+  --ink:#121920;
+  --ink-2:#3B4751;
+  --muted:#6A7783;
+  --line:#D2D9E1;
+  --line-soft:#E2E7ED;
+  --accent:#0E6C88;
+  --accent-ink:#095065;
+  --accent-soft:#DBEBF2;
+  --energy:#A96908;
+  --energy-soft:#F6E9D4;
+  --ok:#2B7A56;
+  --crit:#A93A33;
+  --crit-soft:#F6DFDD;
+  --shadow:0 1px 2px rgba(18,25,32,.05), 0 8px 24px -16px rgba(18,25,32,.28);
+    --shadow:none;
+  }
+  .theme-toggle,.toc{display:none !important}
+  .shell{grid-template-columns:1fr !important;max-width:none;padding:0}
+  body{font-size:11pt}
+  section{break-inside:auto}
+  section > h2,h3,h4{break-after:avoid}
+  .formula,.callout,.card,.stage,.tw{break-inside:avoid}
+  footer{grid-column:1 !important}
+}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+<header class="masthead">
+  <p class="kicker">Sentinel · SAMS — Documento técnico de plataforma</p>
+  <h1>Del dato crudo a la ecuación auditable</h1>
+  <p class="lede">Qué hace la plataforma, capa por capa: cómo entra la telemetría de una planta fotovoltaica, cómo se gobierna, y cómo se convierte en PR, disponibilidad y diagnóstico defendible frente a un contrato de O&amp;M.</p>
+  <div class="meta-row">
+    <span><b>Alcance</b> · 3 servicios · 54 módulos · 66 entidades</span>
+    <span><b>Adquisición</b> · Modbus TCP / IEC 60870-5-104 / API</span>
+    <span><b>Resolución</b> · 5 min</span>
+    <span><b>Normas</b> · IEC 61724-1 · Anexo 9 · Anexo 12</span>
+  </div>
+</header>
+
+<nav class="toc" aria-label="Contenido">
+  <p class="toc-label">Contenido</p>
+  <ol>
+    <li><a href="#s1"><span>01</span>La plataforma en una página</a></li>
+    <li><a href="#s2"><span>02</span>Cadena del dato</a></li>
+    <li><a href="#s3"><span>03</span>Gobierno de datos</a></li>
+    <li><a href="#s4"><span>04</span>Calidad y honestidad del dato</a></li>
+    <li><a href="#s5"><span>05</span>Modelo de datos del diagnóstico</a></li>
+    <li><a href="#s6"><span>06</span>Motor matemático</a></li>
+    <li><a href="#s7"><span>07</span>Disponibilidad</a></li>
+    <li><a href="#s8"><span>08</span>Pérdidas y modelo físico</a></li>
+    <li><a href="#s9"><span>09</span>Diagnóstico y causa raíz</a></li>
+    <li><a href="#s10"><span>10</span>Catálogo de ecuaciones</a></li>
+    <li><a href="#s11"><span>11</span>Ejecución y entregables</a></li>
+    <li><a href="#s12"><span>12</span>Estado real</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<!-- ══════════════ 1 ══════════════ -->
+<section id="s1">
+  <span class="sec-num">01</span>
+  <h2>La plataforma en una página</h2>
+  <p class="intro">Sentinel es dos productos que comparten el mismo activo: un <strong>sistema de monitoreo y diagnóstico energético</strong> de plantas fotovoltaicas y un <strong>CMMS</strong> de mantenimiento. Lo que los une es la jerarquía del activo — planta → centro de transformación → inversor → MPPT → string → tracker — y el hecho de que la misma señal SCADA que dispara un KPI dispara también una orden de trabajo.</p>
+
+  <div class="cards">
+    <div class="card">
+      <span class="c-tag">Qué mide</span>
+      <h4>Desempeño energético</h4>
+      <p>Energía real, irradiación POA, energía teórica, PR, EPI, specific yield, disponibilidad y descomposición de pérdidas — por planta y por cada nivel de la jerarquía.</p>
+    </div>
+    <div class="card">
+      <span class="c-tag">Qué gestiona</span>
+      <h4>Mantenimiento</h4>
+      <p>Tickets, órdenes de trabajo, preventivo, repuestos con punto de reorden, herramientas, compras, procedimientos y biblioteca técnica. Con app de campo PWA offline.</p>
+    </div>
+    <div class="card">
+      <span class="c-tag">Qué prueba</span>
+      <h4>Cumplimiento contractual</h4>
+      <p>Disponibilidad de energía Anexo 9 (meta ≥ 99 %), disponibilidad de trackers Anexo 12 (≥ 98 %) y EPI contra P50 PVSyst, con ventanas de exclusión.</p>
+    </div>
+    <div class="card">
+      <span class="c-tag">Qué representa</span>
+      <h4>Gemelo digital</h4>
+      <p>Plano interactivo con puntos vivos enlazados a señales por <em class="term">reg_ca</em>: cada string, tracker e inversor pinta su estado real sobre el layout de la planta.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ 2 ══════════════ -->
+<section id="s2">
+  <span class="sec-num">02</span>
+  <h2>La cadena del dato</h2>
+  <p class="intro">Cuatro etapas separadas a propósito. El servicio que habla con el campo no calcula KPIs, y el frontend no ejecuta ninguna ecuación energética: solo consulta resultados ya calculados y persistidos.</p>
+
+  <div class="pipeline">
+    <div class="stage">
+      <span class="st-n">Etapa 1 · Campo</span>
+      <span class="st-t">Planta</span>
+      <span class="st-d">Inversores, medidor de planta, piranómetros, trackers, PPC. Cada variable es un registro direccionable.</span>
+      <span class="st-tech">Modbus TCP · IEC-104 · API</span>
+    </div>
+    <div class="stage">
+      <span class="st-n">Etapa 2 · Adquisición</span>
+      <span class="st-t">DRF-SOLAR</span>
+      <span class="st-d">Clientes por planta, captura programada cada 5 min, normalización por escala y endianness, persistencia cruda.</span>
+      <span class="st-tech">Django · Celery · Redis</span>
+    </div>
+    <div class="stage">
+      <span class="st-n">Etapa 3 · Dominio</span>
+      <span class="st-t">Backend SAMS</span>
+      <span class="st-d">Agregación, motor de KPIs, modelo físico, disponibilidad contractual, CMMS, permisos y multiempresa.</span>
+      <span class="st-tech">NestJS · TypeORM · PostgreSQL</span>
+    </div>
+    <div class="stage">
+      <span class="st-n">Etapa 4 · Consumo</span>
+      <span class="st-t">Aplicación</span>
+      <span class="st-d">Escritorio, tablet y PWA de campo con cola offline. Reportes O&amp;M, informes de inversionista, exportación.</span>
+      <span class="st-tech">Next.js · React · 4 idiomas</span>
+    </div>
+  </div>
+
+  <h3>Las cuatro capas lógicas del diagnóstico</h3>
+  <p>Independientemente de dónde corra el código, el diagnóstico está organizado en capas con una responsabilidad cada una. Es lo que permite cambiar una fórmula sin tocar la ingesta, y cambiar el SCADA sin tocar los KPIs.</p>
+
+  <div class="stack">
+    <div class="layer">
+      <div class="l-name">Datos<small>CAPA 1</small></div>
+      <div class="l-body">Ingesta a 5 min, normalización, validación básica y mapeo por planta / CT / inversor / MPPT / string. Fuentes: SCADA crudo, meteorología de planta, PVSyst (P50/P90), fichas técnicas y exclusiones de O&amp;M.</div>
+    </div>
+    <div class="layer">
+      <div class="l-name">Modelado<small>CAPA 2</small></div>
+      <div class="l-body">Dos motores en paralelo: el <strong>modelo teórico simplificado</strong> (P<sub>pico</sub> × POA × factor térmico) y el <strong>modelo físico</strong> tipo pvlib. Producen energía esperada, baseline por jerarquía y curvas I-V modeladas.</div>
+    </div>
+    <div class="layer">
+      <div class="l-name">Indicadores<small>CAPA 3</small></div>
+      <div class="l-body">15 KPIs de catálogo: energía real, POA agregada, energía teórica y modelada, PR (estándar / temperatura / bifacial), EPI, specific yield, disponibilidad por tiempo y por energía, y las tres familias de pérdidas.</div>
+    </div>
+    <div class="layer">
+      <div class="l-name">Diagnóstico<small>CAPA 4</small></div>
+      <div class="l-body">Alarmas de rendimiento, desviaciones contra PVSyst y baseline, clasificación de pérdidas, causa probable por correlación jerárquica y auditoría de calidad de datos.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ 3 ══════════════ -->
+<section id="s3">
+  <span class="sec-num">03</span>
+  <h2>Gobierno de datos</h2>
+  <p class="intro">Un KPI solo vale lo que vale su trazabilidad. La plataforma está construida sobre la premisa de que cualquier número mostrado tiene que poder reconstruirse: con qué señal, con qué fórmula, con qué parámetro vigente y en qué momento.</p>
+
+  <h3>Quién ve qué</h3>
+  <ul>
+    <li><strong>Multiempresa (multi-tenant).</strong> Aislamiento por <em class="term">empresa_id</em> aplicado en la capa de servicio, con guard de tenant en cada petición. Rol de SuperAdmin con acceso cross-tenant explícito.</li>
+    <li><strong>RBAC granular.</strong> Usuario → roles → permisos, más permisos directos al usuario. Validación por decorador en cada endpoint.</li>
+    <li><strong>Auditoría a nivel de base de datos.</strong> Cada petición fija <em class="term">app.user_id</em> en la sesión de PostgreSQL, de modo que los triggers de auditoría atribuyen cada cambio a un usuario real.</li>
+    <li><strong>Auditoría de acceso.</strong> Registro de inicios de sesión <em>y de los intentos fallidos con su motivo</em>, con IP, user-agent y duración de sesión. Consultable solo con permiso propio.</li>
+    <li><strong>Tokens de terceros.</strong> Acceso de clientes externos al servicio de adquisición con expiración y modo de solo lectura.</li>
+  </ul>
+
+  <h3>El contrato del dato: el catálogo de señales</h3>
+  <p>Antes de cualquier ecuación existe el mapeo. Cada variable de planta se declara con todo lo necesario para leerla e interpretarla sin ambigüedad:</p>
+
+  <div class="tw">
+    <table class="data">
+      <thead><tr><th>Atributo</th><th>Qué define</th></tr></thead>
+      <tbody>
+        <tr><td>reg_ca</td><td>Identificador de la variable. En Modbus, la dirección de inicio; en IEC-104, la dirección común del objeto.</td></tr>
+        <tr><td>direccion</td><td>Information Object Address (IOA) en IEC-104.</td></tr>
+        <tr><td>read_func</td><td>Función de lectura Modbus: HOLDING, INPUT, COIL o DISCRETE.</td></tr>
+        <tr><td>data_type / endian</td><td>Tipo del registro y orden de bytes: BIG, LITTLE, MID, MID-LITTLE.</td></tr>
+        <tr><td>scaler</td><td>Factor de escala aplicado al valor crudo. <strong>Es el punto de fallo más frecuente</strong> — un escalador equivocado convierte 599 W/m² en 6 W/m².</td></tr>
+        <tr><td>min / max</td><td>Rango físico admisible; base del saneamiento.</td></tr>
+        <tr><td>units</td><td>Unidad declarada, usada para descubrir señales POA y de energía.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Fórmulas versionadas, no hardcodeadas</h3>
+  <p>Las ecuaciones oficiales viven en base de datos como <strong>versiones inmutables</strong>, no en el código del frontend. Cada versión declara su expresión, sus variables con el origen de cada una (constante, configuración de planta, agregado o derivado), sus parámetros por defecto y su ventana de vigencia.</p>
+
+  <div class="formula">
+    <div class="f-head"><span class="f-name">Anatomía de una versión de fórmula</span><span class="chip">Ejemplo real</span></div>
+    <div class="f-eq">código      : pr_estandar_v1        (único por código + versión)
+expresión   : Ereal / (Ppico * IrrPOA / IrrSTC)
+variables   : Ereal   ← agregado  energia_real
+              Ppico   ← config    potencia_dc_kWp
+              IrrPOA  ← agregado  irradiacion_poa_agregada
+              IrrSTC  ← constante 1
+parámetros  : umbral_irradiancia = 100 W/m² · multiplicador = 100
+vigencia    : effective_from … effective_to
+norma       : IEC 61724-1</div>
+    <div class="f-note">Cambiar una fórmula no edita la anterior: crea la versión siguiente. Los resultados históricos siguen apuntando a la versión con la que se calcularon.</div>
+  </div>
+
+  <h3>Parámetros con vigencia</h3>
+  <p>Los parámetros de planta — potencia DC instalada, coeficiente térmico β, bifacialidad, temperatura de diseño, ratio AC/DC, PR contractual — se editan desde la interfaz y se guardan versionados, con <em class="term">valid_from</em> / <em class="term">valid_to</em>, la fuente declarada y el documento de respaldo adjunto (ficha técnica, informe PVSyst).</p>
+  <p>Esto responde la pregunta que siempre aparece en una disputa: <em>«¿con qué potencia instalada se calculó el PR de marzo?»</em></p>
+
+  <h3>Ventanas de exclusión</h3>
+  <p>Periodos que no deben imputarse al operador: mantenimiento programado, fuerza mayor, curtailment por orden de despacho. Se declaran por ámbito (planta, CT, inversor), con tipo, rango, motivo y qué KPIs afecta. El motor de disponibilidad las descuenta antes de calcular.</p>
+
+  <h3>Corridas reproducibles</h3>
+  <p>Cada cálculo se ejecuta dentro de una <strong>corrida</strong> que deja constancia de todo: rango, quién la disparó y por qué, marcas de inicio y fin, estado, y — lo importante — un <strong>snapshot de las fórmulas y de la configuración vigentes en ese instante</strong>. Los resultados cuelgan de la corrida. Recalcular no pisa el histórico: genera otra corrida.</p>
+</section>
+
+<!-- ══════════════ 4 ══════════════ -->
+<section id="s4">
+  <span class="sec-num">04</span>
+  <h2>Calidad del dato y honestidad del indicador</h2>
+  <p class="intro">La decisión de diseño más importante del motor no es una ecuación: es qué hacer cuando el dato no llega. Un KPI que rellena huecos con optimismo es peor que no tener KPI.</p>
+
+  <div class="callout">
+    <div class="c-title">La regla del «sin datos»</div>
+    <p>La expresión ingenua <span class="mono">E_prod / (E_prod + E_perdida)</span> devuelve <strong>100 %</strong> cuando ambos términos son cero — es decir, presenta la ausencia de datos como ausencia de problemas. En una planta real esto ocultó dos centros de transformación detenidos durante semanas mostrando «100 % disponibilidad» y «40 inversores en estado óptimo».</p>
+    <p>La semántica implementada distingue tres casos: <strong>sin intervalos evaluables → nulo</strong> («—» en pantalla, nunca un número); <strong>con sol y telemetría pero sin producción ni pérdida imputada → 0 %</strong> (la planta estaba parada); <strong>resto → fórmula contractual</strong>. El nulo se propaga hasta la interfaz sin convertirse en cero por el camino.</p>
+  </div>
+
+  <h4>Otros controles activos</h4>
+  <ul>
+    <li><strong>Umbral de irradiancia.</strong> Solo se evalúan intervalos con POA por encima del umbral (100 W/m² para KPIs según IEC 61724-1; 20 W/m² para el conteo contractual de disponibilidad). De noche no se juzga a nadie.</li>
+    <li><strong>Estado de calidad por resultado.</strong> Cada valor persistido lleva su propio <em class="term">quality_status</em>, así que un dashboard puede excluir lo dudoso sin borrarlo.</li>
+    <li><strong>Monitor de cobertura SCADA.</strong> Alerta cuando los inversores sin señal activa superan el <strong>2 % de la capacidad DC instalada</strong>, e informa el factor de corrección. La nota que aparece en el dashboard dice explícitamente si la desviación viene de capacidad invisible o de degradación real — el factor operativo nunca se maquilla en silencio.</li>
+    <li><strong>Estabilidad del factor.</strong> Segunda alerta independiente cuando el factor implícito <span class="mono">E_real / E_teórica</span> se desvía más de 5 puntos porcentuales del nominal durante <strong>dos semanas consecutivas</strong>: síntoma de degradación real o de recalibración pendiente.</li>
+    <li><strong>Detección de huecos.</strong> Monitor de cobertura con detalle de los intervalos faltantes por planta y periodo.</li>
+    <li><strong>Topes físicos.</strong> Cap por capacidad instalada para que un salto de contador (un reset del medidor que reporta 65.505 kWh en un día) no infle el mes.</li>
+  </ul>
+</section>
+
+<!-- ══════════════ 5 ══════════════ -->
+<section id="s5">
+  <span class="sec-num">05</span>
+  <h2>Modelo de datos del diagnóstico</h2>
+  <p class="intro">Siete tablas sostienen todo el dominio. La separación entre <em>definición</em>, <em>configuración</em>, <em>ejecución</em> y <em>resultado</em> es lo que hace auditable el sistema.</p>
+
+  <div class="tw">
+    <table class="data">
+      <thead><tr><th>Entidad</th><th>Rol</th><th>Claves</th></tr></thead>
+      <tbody>
+        <tr><td>Definiciones de KPI</td><td>Catálogo: qué indicadores existen, su categoría, ámbito y unidad</td><td class="mono">key · category · scope_type</td></tr>
+        <tr><td>Versiones de fórmula</td><td>Cómo se calcula cada KPI, con vigencia y variables tipadas</td><td class="mono">code + version · is_default</td></tr>
+        <tr><td>Configuración de planta</td><td>Parámetros versionados con vigencia y respaldo documental</td><td class="mono">planta + config_key + version</td></tr>
+        <tr><td>Ventanas de exclusión</td><td>Periodos no imputables, por ámbito y tipo</td><td class="mono">scope · start_at · end_at</td></tr>
+        <tr><td>Corridas de cálculo</td><td>Ejecución con snapshot de fórmulas y configuración</td><td class="mono">status · formula_snapshot</td></tr>
+        <tr><td>Resultados</td><td>Valor por KPI, ámbito y bucket temporal, con estado de calidad</td><td class="mono">kpi_key · bucket · quality</td></tr>
+        <tr><td>Curvas I-V</td><td>Trazas medidas y modeladas, con curva de referencia marcable</td><td class="mono">trace · modeled · summary</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>Los resultados se guardan <strong>precalculados por bucket temporal</strong> (5 min, día, mes) y por ámbito (planta, CT, inversor, MPPT, string). Las pantallas consultan; no calculan. Es lo que permite abrir un año de histórico sin recorrer millones de registros crudos.</p>
+</section>
+
+<!-- ══════════════ 6 ══════════════ -->
+<section id="s6">
+  <span class="sec-num">06</span>
+  <h2>El motor matemático</h2>
+  <p class="intro">Lo básico primero: energía real, irradiación, energía teórica. De ahí salen PR, EPI y specific yield. Todo lo demás es refinamiento de esos tres denominadores.</p>
+
+  <h3>Los insumos</h3>
+  <div class="formula energy">
+    <div class="f-head"><span class="f-name">Energía real</span><span class="chip energy">kWh</span></div>
+    <div class="f-eq">E_real = energía medida y validada en el medidor de planta o en el SCADA</div>
+    <div class="f-note">Se toma el acumulador de energía del día. Cuando el acumulador no resetea a medianoche, se sustituye por la integral de la potencia AC — un caso real detectado en plantas con inversor centralizado.</div>
+  </div>
+
+  <div class="formula energy">
+    <div class="f-head"><span class="f-name">Irradiación POA agregada</span><span class="chip energy">kWh/m²</span></div>
+    <div class="f-eq">Irr_POA = agregación validada de los piranómetros en plano de array</div>
+    <div class="f-note">Promedio o agregación ponderada con validación de sensores. Si no hay piranómetro fiable, entra el modelo físico (§08) y el resultado queda marcado como modelado, no medido.</div>
+  </div>
+
+  <h3>Energía teórica — tres niveles, a propósito</h3>
+  <p>Un solo número «energía esperada» invita a la discusión. La plataforma calcula tres y declara cuál es la referencia activa de cada KPI.</p>
+
+  <div class="formula">
+    <div class="f-head"><span class="f-name">1 · Energía teórica física</span><span class="chip norm">Benchmark técnico</span></div>
+    <div class="f-eq">E_teo_física = P_dc · Irr_POA · [1 + β · (T_cell − T_cell_diseño)]</div>
+    <div class="f-note">Sin castigos operativos ni contractuales. <span class="mono">β</span> es el coeficiente térmico de potencia del módulo (típico −0,30 %/°C). Es la referencia para auditorías internas y para el waterfall de pérdidas.</div>
+  </div>
+
+  <div class="formula">
+    <div class="f-head"><span class="f-name">2 · Energía teórica limitada</span><span class="chip norm">Referencia operativa</span></div>
+    <div class="f-eq">E_teo_limitada = E_teo_física · r_AC/DC</div>
+    <div class="f-note">El ratio AC/DC (p. ej. 0,916) absorbe lo que el modelo físico puro ignora: eficiencia del inversor (~97 %), cableado DC (1,5 %) y AC (1 %), transformador (1,5 %), auxiliares (0,5 %), soiling (3 %) y mismatch (1,5 %). Se obtiene del diseño PVSyst o del ratio real medido, y se recalibra cuando el sesgo supera ±5 pp durante dos semanas.</div>
+  </div>
+
+  <div class="formula">
+    <div class="f-head"><span class="f-name">3 · Energía teórica contractual</span><span class="chip norm">Garantías</span></div>
+    <div class="f-eq">E_teo_contractual = E_teo_limitada · PR_contractual</div>
+    <div class="f-note">Solo para informes de cumplimiento y análisis de penalizaciones. Nunca se usa como referencia del dashboard operativo.</div>
+  </div>
+
+  <h3>Performance Ratio</h3>
+  <p>El indicador que todo el mundo pide. Tres variantes, según lo que se quiera aislar.</p>
+
+  <div class="formula">
+    <div class="f-head"><span class="f-name">PR estándar</span><span class="chip norm">IEC 61724-1</span><span class="chip">Activa</span></div>
+    <div class="f-eq">PR = E_real / (P_dc · Irr_POA / Irr_STC) × 100 %</div>
+    <div class="f-note">Con <span class="mono">Irr_STC = 1 kWh/m²</span> (= 1000 W/m² durante 1 h). Sin ninguna corrección: es la medida cruda de cuánto rinde la planta frente a su placa. También se evalúa en forma instantánea cada 5 minutos: <span class="mono">PR = P_real / (P_nom_DC · G_POA / 1000)</span>.</div>
+  </div>
+
+  <div class="formula">
+    <div class="f-head"><span class="f-name">PR corregido por temperatura</span><span class="chip norm">NREL</span></div>
+    <div class="f-eq">PR_T = E_real / [(P_dc · Irr_POA / Irr_STC) · (1 − β · (T_cell − T_cell_diseño))] × 100 %</div>
+    <div class="f-note">Neutraliza el efecto del calor. Es el PR que permite comparar julio contra enero, o una planta en costa contra una en altura, sin que el clima explique la diferencia.</div>
+  </div>
+
+  <div class="formula">
+    <div class="f-head"><span class="f-name">PR bifacial</span><span class="chip norm">Requiere medición rear</span></div>
+    <div class="f-eq">PR_bif = E_real / [P_dc · (Irr_POA + φ · Irr_rear) / Irr_STC] × 100 %</div>
+    <div class="f-note"><span class="mono">φ</span> es el índice de bifacialidad del módulo (p. ej. 0,80 ± 0,05 de ficha técnica). Sin este término, una planta bifacial parece rendir por encima de lo posible.</div>
+  </div>
+
+  <h3>EPI — Energy Performance Index</h3>
+  <p>Si el PR compara contra la placa, el EPI compara contra la <em>expectativa</em>. Por eso hay uno por cada referencia.</p>
+
+  <div class="tw">
+    <table class="data">
+      <thead><tr><th>Variante</th><th>Fórmula</th><th>Para qué sirve</th></tr></thead>
+      <tbody>
+        <tr><td>EPI físico</td><td class="mono">E_real / E_teo_física</td><td>Benchmark técnico puro. Su distancia al EPI operativo son las pérdidas de BOS.</td></tr>
+        <tr><td>EPI operativo</td><td class="mono">E_real / E_teo_limitada</td><td>KPI principal del dashboard: descuenta las pérdidas estructurales conocidas.</td></tr>
+        <tr><td>EPI contractual</td><td class="mono">E_real / E_teo_contractual</td><td>Cumplimiento del mínimo garantizado.</td></tr>
+        <tr><td>EPI vs P50</td><td class="mono">E_real / E_P50_PVSyst</td><td>Desempeño frente al caso de negocio simulado.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4>La corrección meteorológica del P50</h4>
+  <p>Comparar la producción real contra un P50 simulado con un año meteorológico típico es injusto en ambos sentidos: un año nublado penaliza a un operador impecable. La energía esperada se corrige por las condiciones reales medidas:</p>
+
+  <div class="formula">
+    <div class="f-head"><span class="f-name">Energía esperada corregida</span><span class="chip norm">Contractual</span></div>
+    <div class="f-eq">E_Expected = E_sim · (GTI_real / GTI_sim) · [1 − Kp · (T_real − T_sim)]</div>
+    <div class="f-note">De ahí se derivan tres lecturas separadas — y esta separación es la que suele cerrar discusiones:</div>
+    <div class="f-eq" style="margin-top:12px">EPI técnico    = E_real / E_Expected × 100 %   → ¿operó bien la planta?
+EPI financiero = E_real / E_sim      × 100 %   → ¿se cumplió el caso de negocio?
+Factor clima   = E_Expected / E_sim  × 100 %   → ¿cuánto de la diferencia es el clima?</div>
+  </div>
+
+  <div class="formula">
+    <div class="f-head"><span class="f-name">Specific Yield</span><span class="chip norm">kWh/kWp</span><span class="chip">Activa</span></div>
+    <div class="f-eq">SY = E_real / P_dc</div>
+    <div class="f-note">Producción normalizada por capacidad instalada. Es la única métrica que permite comparar directamente una planta de 10 MWp con una de 800 kWp, y la base del mapa de calor mensual por inversor.</div>
+  </div>
+</section>
+
+<!-- ══════════════ 7 ══════════════ -->
+<section id="s7">
+  <span class="sec-num">07</span>
+  <h2>Disponibilidad</h2>
+  <p class="intro">Es lo que se factura y lo que se disputa. La plataforma calcula dos disponibilidades distintas porque responden a preguntas distintas, y no deben mezclarse.</p>
+
+  <div class="formula">
+    <div class="f-head"><span class="f-name">Disponibilidad por tiempo</span><span class="chip">Ponderada por DC</span></div>
+    <div class="f-eq">AVA_planta = Σ (AVA_inversor_i · peso_DC_i) × 100 %</div>
+    <div class="f-note">Cada inversor pesa según la potencia DC que tiene conectada, no según su número. Solo se consideran intervalos con irradiancia sobre el umbral. Un inversor de 500 kWp caído no cuenta igual que uno de 150 kWp.</div>
+  </div>
+
+  <div class="formula crit">
+    <div class="f-head"><span class="f-name">Disponibilidad de energía</span><span class="chip crit">Anexo 9 · meta ≥ 99 %</span></div>
+    <div class="f-eq">Disp = E_producida / (E_producida + E_perdida) × 100 %</div>
+    <div class="f-note">La métrica contractual. No pregunta cuánto tiempo estuvo encendido el equipo, sino <strong>cuánta energía se dejó de producir por causas imputables</strong>. Su dificultad está enteramente en calcular <span class="mono">E_perdida</span> de forma defendible.</div>
+  </div>
+
+  <h3>El pipeline Anexo 9, paso a paso</h3>
+  <p>Once pasos sobre intervalos de 5 minutos. El objetivo es responder, para cada inversor y cada instante: <em>¿cuánto habría producido si hubiera estado sano?</em></p>
+
+  <ol class="steps">
+    <li><b>Lectura.</b> P<sub>ac</sub> por inversor y P<sub>sys</sub> del medidor de planta, cada 5 min.</li>
+    <li><b>Reparto proporcional.</b> <span class="mono">P_inv_eff = (AC_inv / Σ AC_inv) × P_sys</span> — reconcilia el sumatorio de inversores con la medida real de planta.</li>
+    <li><b>Normalizador.</b> <span class="mono">n_inv</span> = potencia AC de placa si hay clipping; potencia DC conectada si no.</li>
+    <li><b>Normalización.</b> Cada inversor se lleva a una escala común para poder compararlos entre sí.</li>
+    <li><b>Potencia de referencia.</b> <span class="mono">P_ref</span> = promedio de los inversores entre el <strong>percentil 40 y el 90</strong>, excluyendo los apagados. Se usa la mediana del pelotón, no el mejor ni el promedio: un inversor excepcional no fija el estándar, y uno caído no lo hunde.</li>
+    <li><b>Detección de apagado.</b> Inversor OFF cuando <span class="mono">P_ac = 0</span> con <span class="mono">G_POA</span> por encima del umbral. Con sol, producir cero es un fallo, no una condición.</li>
+    <li><b>Detección de rendimiento parcial.</b> PP cuando el inversor rinde <strong>≤ 80 % de P_ref durante ≥ 30 minutos consecutivos</strong> (6 registros). La condición de duración evita imputar nubes de paso.</li>
+    <li><b>Desnormalización.</b> P_ref se devuelve a la escala del inversor evaluado.</li>
+    <li><b>Energía perdida por apagado.</b> <span class="mono">E_off = Σ P_inv_d × (5/60)</span>.</li>
+    <li><b>Energía perdida por rendimiento parcial.</b> <span class="mono">E_pp = Σ (P_inv_d − P_inv_eff) × (5/60)</span> — solo el déficit, no la producción entera.</li>
+    <li><b>Disponibilidad.</b> Fórmula contractual sobre los totales, descontando las ventanas de exclusión.</li>
+  </ol>
+
+  <h4>Clasificación de estado</h4>
+  <div class="tw">
+    <table class="data">
+      <thead><tr><th>Estado</th><th>Umbral</th><th>Lectura</th></tr></thead>
+      <tbody>
+        <tr><td>Óptima</td><td class="num">≥ 99,5 %</td><td>Dentro de la meta contractual con margen.</td></tr>
+        <tr><td>Parcial</td><td class="num">95 – 99,5 %</td><td>Por debajo del objetivo; requiere explicación documentada.</td></tr>
+        <tr><td>Crítica</td><td class="num">&lt; 95 %</td><td>Incumplimiento; dispara análisis de causa raíz.</td></tr>
+        <tr><td>Sin datos</td><td class="num">—</td><td>Estado terminal: no se clasifica ni se promedia. No es un cero ni un cien.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>Existe además la <strong>disponibilidad de trackers</strong> (Anexo 12, meta ≥ 98 %): <span class="mono">[T_func − (T_inactivo + T_exclusiones)] / T_func × 100 %</span>, donde un tracker cuenta como no disponible si tiene alarma activa o bandera contractual.</p>
+</section>
+
+<!-- ══════════════ 8 ══════════════ -->
+<section id="s8">
+  <span class="sec-num">08</span>
+  <h2>Pérdidas y modelo físico</h2>
+  <p class="intro">Saber que faltan 40 MWh no sirve; saber que 22 son curtailment, 11 indisponibilidad y 7 térmicas, sí. La descomposición de pérdidas es lo que convierte un KPI en una acción.</p>
+
+  <div class="cards">
+    <div class="card">
+      <span class="c-tag">Imputable</span>
+      <h4>Indisponibilidad</h4>
+      <p>Suma de <span class="mono">E_off + E_pp</span> del pipeline Anexo 9, por inversor. Es la única familia de pérdidas que penaliza al operador.</p>
+    </div>
+    <div class="card">
+      <span class="c-tag">No imputable</span>
+      <h4>Curtailment</h4>
+      <p>Limitación por orden de despacho o restricción de red. Se modela vía el setpoint del PPC y se declara como ventana de exclusión.</p>
+    </div>
+    <div class="card">
+      <span class="c-tag">Ambiental</span>
+      <h4>Térmicas</h4>
+      <p><span class="mono">|E_real · β · (T_cell − 25)|</span> cuando la celda opera por encima de STC. Explica el hueco de verano sin culpar a nadie.</p>
+    </div>
+    <div class="card">
+      <span class="c-tag">Operativa</span>
+      <h4>Soiling</h4>
+      <p>Vía soiling ratio o pareja de sensores limpio/sucio. Es la pérdida que justifica económicamente una campaña de lavado.</p>
+    </div>
+  </div>
+
+  <h3>Clipping y el «EPI justo»</h3>
+  <p>Una planta con ratio DC/AC alto recorta potencia por diseño en las horas de mayor irradiancia. Si el modelo teórico ignora ese recorte, sobreestima la producción posible y el EPI parece bajo cuando la planta opera de forma impecable.</p>
+
+  <div class="formula">
+    <div class="f-head"><span class="f-name">Modelo de clipping en dos límites</span><span class="chip norm">PVWatts v5 · IEC 61724-1</span></div>
+    <div class="f-eq">1 · Clipping de inversor : P_ac ≤ P_ac_nominal        (tope físico del equipo)
+2 · Clipping de planta  : Σ P_ac ≤ P_PPC_setpoint     (límite de inyección a red)
+
+E_teo_limitada = ∫ min(P_dc · η, P_ac_nom, P_PPC) dt</div>
+    <div class="f-note">El resultado incluye el <strong>EPI justo</strong> — corregido para no penalizar energía que la planta físicamente no podía exportar — más el ratio de clipping y la energía recortada, desglosada por hora y por inversor.</div>
+  </div>
+
+  <h3>Modelo físico: energía esperada sin piranómetro fiable</h3>
+  <p>Cuando el sensor de irradiancia falta, está descalibrado o la planta nunca lo tuvo, el motor reconstruye la irradiancia en plano y la energía esperada desde primeros principios. La cadena está implementada con las referencias académicas explícitas en el código:</p>
+
+  <div class="tw">
+    <table class="data">
+      <thead><tr><th>Etapa</th><th>Método</th><th>Referencia</th></tr></thead>
+      <tbody>
+        <tr><td>Posición solar</td><td>Serie de Fourier de Spencer — precisión ±0,5°</td><td class="mono">Spencer (1971)</td></tr>
+        <tr><td>Geometría de tracker</td><td>Eje simple con backtracking</td><td class="mono">Duffie &amp; Beckman (2013)</td></tr>
+        <tr><td>GHI → POA</td><td>Correlación difusa de Erbs + cielo difuso de Perez, con coeficientes F1 circumsolar y F2 de brillo de horizonte por bin de claridad</td><td class="mono">Perez et al. (1990)</td></tr>
+        <tr><td>Temperatura de celda</td><td>SAPM simplificado</td><td class="mono">King et al. (2004)</td></tr>
+        <tr><td>Potencia DC</td><td>PVWatts v5</td><td class="mono">Dobos (2014), NREL</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout rule">
+    <div class="c-title">El modelo no sustituye la medición</div>
+    <p>Cuando el piranómetro es válido, manda el piranómetro. El modelo entra como respaldo y como validación cruzada: el motor reporta el <strong>RMSE de POA por intervalo</strong> y el <strong>RMSE de energía teórica diaria</strong>, junto con el recuento de intervalos que usaron sensor real frente a los que usaron modelo. La trazabilidad de la fuente viaja con el resultado.</p>
+  </div>
+
+  <h3>Curvas I-V</h3>
+  <p>El diagnóstico de nivel más fino. Se persisten trazas medidas y modeladas, con una curva marcable como referencia y comparación automática contra ella.</p>
+  <div class="formula">
+    <div class="f-head"><span class="f-name">Modelo de un diodo</span><span class="chip norm">De Soto (2006)</span></div>
+    <div class="f-eq">I = I_ph − I_0 · {exp[(V + I·Rs) / (n·Ns·Vt)] − 1} − (V + I·Rs) / Rsh</div>
+    <div class="f-note">Resuelto por Newton-Raphson. La forma de la desviación respecto a la referencia distingue tres fallos que un KPI agregado nunca separa: degradación de módulos, sombreado parcial y diodos de bypass en fallo.</div>
+  </div>
+</section>
+
+<!-- ══════════════ 9 ══════════════ -->
+<section id="s9">
+  <span class="sec-num">09</span>
+  <h2>Diagnóstico y causa raíz</h2>
+  <p class="intro">La capa que convierte indicadores en hipótesis. Su valor está en la correlación entre niveles de la jerarquía: un número bajo en planta no dice nada; un número bajo que se explica por tres strings de un mismo tracker, sí.</p>
+
+  <h3>Correlación jerárquica automática</h3>
+  <p>Cuando se detecta un inversor apagado o en rendimiento parcial, el analizador <strong>baja automáticamente a sus strings y a sus trackers</strong> y ejecuta un árbol de decisión para proponer la causa. No es una alarma por umbral: es una correlación de tres niveles.</p>
+
+  <div class="tw">
+    <table class="data">
+      <thead><tr><th>Señal de diagnóstico</th><th>Criterio</th><th>Qué sugiere</th></tr></thead>
+      <tbody>
+        <tr><td>Residual normalizado</td><td class="mono">&gt; −5 % / −5 a −10 / −10 a −20 / &lt; −20 %</td><td>Normal · leve · moderada · crítica</td></tr>
+        <tr><td>Dispersión entre strings</td><td class="mono">CV &lt; 3 % normal · &gt; 10 % crítico</td><td>Mismatch, string desconectado, sombra local</td></tr>
+        <tr><td>Confirmación cruzada tracker</td><td class="mono">flag angular AND ratio_I &lt; 0,90</td><td>Confirma que el desfase del tracker causa la pérdida</td></tr>
+        <tr><td>Score compuesto de string</td><td class="mono">0,40·PI + 0,30·ΔI + 0,15·CV + 0,15·tendencia</td><td>&gt; 0,85 normal · 0,70–0,85 leve · 0,50–0,70 moderada · &lt; 0,50 crítica</td></tr>
+        <tr><td>Desviación de elevación</td><td class="mono">&gt; 2°</td><td>Tracker desalineado — alarma con impacto cuantificable</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Vigilancia continua</h3>
+  <p>Además de las corridas, hay un monitor externo que cada 10 minutos comprueba, <strong>cuando hay sol</strong> (POA ≥ 150 W/m²), la potencia máxima de los últimos 30 minutos por centro de transformación. Si cae por debajo del umbral, marca el CT como caído y avisa por mensajería, con anti-spam de estado: un aviso al caer y otro al recuperarse.</p>
+  <p>Nació de un incidente real: un CT dejó de generar y el PR de planta se desplomó a ~40 % sin que nadie lo notara durante días.</p>
+
+  <h3>Asistente de diagnóstico</h3>
+  <p>Un asistente conversacional integrado en el plano interactivo, con los umbrales de diagnóstico de la plataforma codificados en su contexto: ratio P<sub>DC</sub> real/teórica por encima de 89 % óptimo, entre 71 y 89 % alerta media, por debajo de 70 % falla crítica; γ = −0,35 %/°C; irradiancia mínima de evaluación 50 W/m². Sabe distinguir suciedad, sombras, fallo de módulo, fallo de string y clipping.</p>
+</section>
+
+<!-- ══════════════ 10 ══════════════ -->
+<section id="s10">
+  <span class="sec-num">10</span>
+  <h2>Catálogo de ecuaciones</h2>
+  <p class="intro">El catálogo completo es navegable dentro del producto: cada ecuación con su expresión, sus variables, su unidad, la norma que la respalda y su estado. Cinco capítulos siguiendo la jerarquía física del activo.</p>
+
+  <div class="tw">
+    <table class="data">
+      <thead><tr><th>Cap.</th><th>Ámbito</th><th>Contenido</th><th>Estado</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>String DC · Inversor AC · Planta</td><td>Potencia DC teórica (PVWatts), residual absoluto y normalizado, corriente teórica, coeficiente de variación entre strings, potencia AC teórica, potencia de planta con pérdidas de BOS, PR instantáneo</td><td><span class="st-dot on">2 activas</span></td></tr>
+        <tr><td>2</td><td>Trackers</td><td>Ángulo teórico, factor de pérdida por desalineación, confirmación cruzada de anomalía, impacto económico</td><td><span class="st-dot av">Disponible</span></td></tr>
+        <tr><td>3</td><td>Curva I-V</td><td>Modelo de un diodo con solver Newton-Raphson</td><td><span class="st-dot av">Disponible</span></td></tr>
+        <tr><td>4</td><td>SPD — diagnóstico avanzado</td><td>Disponibilidad Anexo 9, potencia de referencia P40-P90, detección de rendimiento parcial, performance index y score de string, disponibilidad de trackers Anexo 12</td><td><span class="st-dot av">Disponible</span></td></tr>
+        <tr><td>5</td><td>CMMS</td><td>MTBF, MTTR, disponibilidad técnica, revenue at risk, ratio correctivo/preventivo</td><td><span class="st-dot pl">Planificada</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>Las ecuaciones del capítulo 5 cierran el círculo entre las dos mitades de la plataforma: <span class="mono">A = MTBF / (MTBF + MTTR)</span> mide la fiabilidad del equipo desde las órdenes de trabajo, mientras el Anexo 9 mide la disponibilidad desde la telemetría. Cuando ambas discrepan, la discrepancia misma es el hallazgo.</p>
+</section>
+
+<!-- ══════════════ 11 ══════════════ -->
+<section id="s11">
+  <span class="sec-num">11</span>
+  <h2>Ejecución y entregables</h2>
+
+  <h3>Qué corre solo</h3>
+  <div class="tw">
+    <table class="data">
+      <thead><tr><th>Proceso</th><th>Frecuencia</th><th>Qué hace</th></tr></thead>
+      <tbody>
+        <tr><td>Captura SCADA</td><td class="mono">cada 5 min</td><td>Lectura de todas las señales activas por planta, con reintentos.</td></tr>
+        <tr><td>Agregación</td><td class="mono">cada 5 min</td><td>Consolidación de intervalos y KPIs instantáneos.</td></tr>
+        <tr><td>Irradiancia externa</td><td class="mono">cada 10 min</td><td>Respaldo meteorológico para plantas sin sensor fiable.</td></tr>
+        <tr><td>Monitor de CT</td><td class="mono">cada 10 min</td><td>Detección de centro de transformación caído, con aviso.</td></tr>
+        <tr><td>KPIs diarios</td><td class="mono">02:30</td><td>Corrida completa del día anterior.</td></tr>
+        <tr><td>Cierre mensual</td><td class="mono">día 1, 03:00</td><td>Consolidación del mes y comparativa contra P50.</td></tr>
+        <tr><td>Corridas programadas</td><td class="mono">configurable</td><td>Ejecución y envío automático del informe por correo.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Qué se entrega</h3>
+  <ul>
+    <li><strong>Reporte O&amp;M paginado</strong>, listo para imprimir: descripción, resumen ejecutivo, operación periódica, unidades de potencia, recurso meteorológico, desviaciones y dashboard analítico.</li>
+    <li><strong>Informe de inversionistas</strong> con exportación a PDF generada en servidor.</li>
+    <li><strong>Datos por intervalo</strong> (5 min) exportables para auditoría de terceros.</li>
+    <li><strong>Comparador de métodos de cálculo</strong>: el mismo periodo evaluado con distintas referencias, para sustentar una posición en una reunión contractual.</li>
+    <li>Exportación a Excel, PDF, ZIP y GeoTIFF; integración con Power BI.</li>
+  </ul>
+</section>
+
+<!-- ══════════════ 12 ══════════════ -->
+<section id="s12">
+  <span class="sec-num">12</span>
+  <h2>Estado real de la implementación</h2>
+  <p class="intro">Distinguir lo que está en producción de lo que está construido pero no cableado, y de lo que está definido en el catálogo pero aún no se calcula. Esta separación es parte del gobierno del dato.</p>
+
+  <div class="tw">
+    <table class="data">
+      <thead><tr><th>Capacidad</th><th>Estado</th><th>Nota</th></tr></thead>
+      <tbody>
+        <tr><td>Adquisición 5 min</td><td><span class="st-dot on">En producción</span></td><td>Modbus TCP e IEC-104 por planta, con gestión de clientes en caliente.</td></tr>
+        <tr><td>Catálogo de KPIs y fórmulas versionadas</td><td><span class="st-dot on">En producción</span></td><td>15 KPIs y 8 fórmulas por defecto, sembradas automáticamente.</td></tr>
+        <tr><td>Parámetros con vigencia y adjuntos</td><td><span class="st-dot on">En producción</span></td><td>CRUD completo, duplicado de configuraciones y limpieza de archivos.</td></tr>
+        <tr><td>PR · EPI · SY · disponibilidad</td><td><span class="st-dot on">En producción</span></td><td>Motor de agregación por planta, CT e inversor.</td></tr>
+        <tr><td>Anexo 9 · clipping · modelo físico</td><td><span class="st-dot on">En producción</span></td><td>Servicios dedicados con endpoints propios y persistencia de corridas.</td></tr>
+        <tr><td>Semántica «sin datos» y monitor de cobertura</td><td><span class="st-dot on">En producción</span></td><td>Con pruebas automatizadas.</td></tr>
+        <tr><td>Motor de corridas del módulo de diagnóstico</td><td><span class="st-dot av">Parcial</span></td><td>Hoy persiste energía real y specific yield por día; el resto de KPIs del catálogo se sirve desde el motor de agregación, no desde la corrida. Consolidar ambos caminos es el siguiente paso.</td></tr>
+        <tr><td>Curvas I-V y trackers</td><td><span class="st-dot av">Construido</span></td><td>CRUD, comparación y explorador visual listos; dependen de datos de campo por planta.</td></tr>
+        <tr><td>KPIs CMMS (MTBF, MTTR)</td><td><span class="st-dot pl">Definido</span></td><td>En el catálogo de ecuaciones; pendiente de conectar al histórico de órdenes.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Lo que hace falta del lado del cliente</h3>
+  <p>Los tres bloqueos recurrentes para poner una planta nueva al día no son de software:</p>
+  <ul>
+    <li><strong>Confirmación del mapeo SCADA real</strong> por planta — señal por señal, con escala y unidad verificadas.</li>
+    <li><strong>Dataset PVSyst</strong> (P50/P90 mensual con GTI y temperatura simulada) para poder calcular EPI técnico y factor climático.</li>
+    <li><strong>Fichas técnicas</strong> de módulo e inversor, y las <strong>reglas contractuales</strong> de la planta: PR garantizado, meta de disponibilidad, tratamiento del curtailment.</li>
+  </ul>
+
+  <div class="callout">
+    <div class="c-title">Riesgos que el diseño asume explícitamente</div>
+    <p>KPIs inválidos si no hay validación de calidad de datos. PR o disponibilidad por encima de 100 % si no se definen reglas de saneamiento. Duplicidad si conviven dos configuraciones de la misma planta sin migración ordenada. Los tres se mitigan con lo descrito en §03 y §04, pero ninguno desaparece solo.</p>
+  </div>
+</section>
+
+<footer>
+  Documento técnico de plataforma · Sentinel / SAMS<br>
+  Elaborado a partir del código de los tres repositorios: adquisición, dominio y aplicación.<br>
+  Las fórmulas reproducen las expresiones implementadas y su norma de referencia.
+</footer>
+
+</main>
+</div>
+
+<button class="theme-toggle" id="themeToggle" type="button">
+  <span class="tt-icon" aria-hidden="true">&#9788;</span><span class="tt-label">Modo claro</span>
+</button>
+
+<script>
+(function(){
+  var root = document.documentElement;
+  var btn  = document.getElementById('themeToggle');
+  var icon = btn.querySelector('.tt-icon');
+  var lbl  = btn.querySelector('.tt-label');
+  var KEY  = 'sentinel-doc-theme';
+
+  function actual(){
+    var mio = root.getAttribute('data-doc-theme');
+    if (mio) return mio;
+    var host = root.getAttribute('data-theme');
+    if (host === 'dark' || host === 'light') return host;
+    try {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    } catch (e) { return 'light'; }
+  }
+
+  function pintar(){
+    var oscuro = actual() === 'dark';
+    icon.innerHTML = oscuro ? '&#9788;' : '&#9789;';
+    lbl.textContent = oscuro ? 'Modo claro' : 'Modo oscuro';
+    btn.setAttribute('aria-label', 'Cambiar a ' + lbl.textContent.toLowerCase());
+  }
+
+  try {
+    var guardado = localStorage.getItem(KEY);
+    if (guardado === 'light' || guardado === 'dark') root.setAttribute('data-doc-theme', guardado);
+  } catch (e) {}
+
+  pintar();
+
+  btn.addEventListener('click', function(){
+    var siguiente = actual() === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-doc-theme', siguiente);
+    try { localStorage.setItem(KEY, siguiente); } catch (e) {}
+    pintar();
+  });
+
+  try {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(){
+      if (!root.getAttribute('data-doc-theme')) pintar();
+    });
+  } catch (e) {}
+
+  // El lector puede estampar su tema despues de cargar: resincronizar la etiqueta
+  try {
+    new MutationObserver(function(){
+      if (!root.getAttribute('data-doc-theme')) pintar();
+    }).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+  } catch (e) {}
+})();
+</script>
+
+</body>
+</html>
