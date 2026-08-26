@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<meta name="description" content="Documento tecnico de la plataforma Sentinel/SAMS: modulos, arquitectura, gobierno de datos e implementacion matematica de PR, EPI, disponibilidad Anexo 9 y diagnostico energetico.">
+<meta name="description" content="Documento tecnico de la plataforma Sentinel/SAMS: modulos, arquitectura, gobierno de datos e implementacion matematica de PR, EPI, disponibilidad y diagnostico energetico.">
 <meta name="color-scheme" content="light dark">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%E2%98%80%EF%B8%8F%3C/text%3E%3C/svg%3E">
 <title>Plataforma Sentinel</title>
@@ -361,7 +361,7 @@ footer{
     <span><b>Alcance</b> · 3 servicios · 53 módulos · 66 entidades</span>
     <span><b>Adquisición</b> · Modbus TCP / IEC 60870-5-104 / API</span>
     <span><b>Resolución</b> · 5 min</span>
-    <span><b>Normas</b> · IEC 61724-1 · Anexo 9 · Anexo 12</span>
+    <span><b>Normas</b> · IEC 61724-1 · NREL PVWatts v5</span>
   </div>
 </header>
 
@@ -407,7 +407,7 @@ footer{
     <div class="card">
       <span class="c-tag">Qué prueba</span>
       <h4>Cumplimiento contractual</h4>
-      <p>Disponibilidad de energía Anexo 9 (meta ≥ 99 %), disponibilidad de trackers Anexo 12 (≥ 98 %) y EPI contra P50 PVSyst, con ventanas de exclusión.</p>
+      <p>Verificación del PR garantizado, de la disponibilidad de energía (meta ≥ 99 %), de la disponibilidad de trackers (≥ 98 %) y del EPI contra el P50 de PVSyst, con ventanas de exclusión.</p>
     </div>
     <div class="card">
       <span class="c-tag">Qué representa</span>
@@ -429,7 +429,7 @@ footer{
       <tbody>
         <tr><td>Vista general</td><td>Estado de todo el parque en una pantalla, con acceso al análisis por planta</td><td>Condiciones meteorológicas, eficiencia, adaptadores por planta y configuración desde la misma vista</td></tr>
         <tr><td>Monitorización</td><td>Operación en vivo por nivel de la jerarquía</td><td>Unidades de potencia, zonas, edición de strings, vista satelital, diagrama unifilar e historiales por inversor, string y tracker</td></tr>
-        <tr><td>Trackers</td><td>Seguimiento solar con umbral de alarma propio</td><td>Inclinación objetivo contra real, desviación de elevación (&gt; 2° es alarma), mapa de calor mensual y disponibilidad Anexo 12</td></tr>
+        <tr><td>Trackers</td><td>Seguimiento solar con umbral de alarma propio</td><td>Inclinación objetivo contra real, desviación de elevación (&gt; 2° es alarma), mapa de calor mensual y disponibilidad técnica por tracker</td></tr>
         <tr><td>Gemelo digital</td><td>El layout real de la planta con valores vivos encima</td><td>Cada punto se enlaza a una señal por <em class="term">reg_ca</em> y pinta su estado: normal, alerta, sin producción, sin señal o sin configurar. Coordenadas versionadas con snapshots restaurables</td></tr>
         <tr><td>Señales y SCADA</td><td>Lectura y mantenimiento del mapeo de señales</td><td>11 endpoints de consulta (valores, series, grupos de inversores, planta ahora, planta hoy), escalado de señales en caliente y plantillas de columnas reutilizables</td></tr>
         <tr><td>Gestión de activos</td><td>Inventario técnico y su hoja de vida</td><td>Equipos, componentes, categorías, ubicaciones, unidades y constantes por planta y año, con dashboard y vista de mapa</td></tr>
@@ -755,12 +755,12 @@ Factor clima   = E_Expected / E_sim  × 100 %   → ¿cuánto de la diferencia e
   </div>
 
   <div class="formula crit">
-    <div class="f-head"><span class="f-name">Disponibilidad de energía</span><span class="chip crit">Anexo 9 · meta ≥ 99 %</span></div>
+    <div class="f-head"><span class="f-name">Disponibilidad de energía</span><span class="chip crit">Contractual · meta ≥ 99 %</span></div>
     <div class="f-eq">Disp = E_producida / (E_producida + E_perdida) × 100 %</div>
     <div class="f-note">La métrica contractual. No pregunta cuánto tiempo estuvo encendido el equipo, sino <strong>cuánta energía se dejó de producir por causas imputables</strong>. Su dificultad está enteramente en calcular <span class="mono">E_perdida</span> de forma defendible.</div>
   </div>
 
-  <h3>El pipeline Anexo 9, paso a paso</h3>
+  <h3>El cálculo contractual, paso a paso</h3>
   <p>Once pasos sobre intervalos de 5 minutos. El objetivo es responder, para cada inversor y cada instante: <em>¿cuánto habría producido si hubiera estado sano?</em></p>
 
   <ol class="steps">
@@ -790,7 +790,7 @@ Factor clima   = E_Expected / E_sim  × 100 %   → ¿cuánto de la diferencia e
     </table>
   </div>
 
-  <p>Existe además la <strong>disponibilidad de trackers</strong> (Anexo 12, meta ≥ 98 %): <span class="mono">[T_func − (T_inactivo + T_exclusiones)] / T_func × 100 %</span>, donde un tracker cuenta como no disponible si tiene alarma activa o bandera contractual.</p>
+  <p>Existe además la <strong>disponibilidad de trackers</strong> (meta contractual ≥ 98 %): <span class="mono">[T_func − (T_inactivo + T_exclusiones)] / T_func × 100 %</span>, donde un tracker cuenta como no disponible si tiene alarma activa o bandera contractual.</p>
 </section>
 
 <!-- ══════════════ 8 ══════════════ -->
@@ -803,7 +803,7 @@ Factor clima   = E_Expected / E_sim  × 100 %   → ¿cuánto de la diferencia e
     <div class="card">
       <span class="c-tag">Imputable</span>
       <h4>Indisponibilidad</h4>
-      <p>Suma de <span class="mono">E_off + E_pp</span> del pipeline Anexo 9, por inversor. Es la única familia de pérdidas que penaliza al operador.</p>
+      <p>Suma de <span class="mono">E_off + E_pp</span> del cálculo contractual, por inversor. Es la única familia de pérdidas que penaliza al operador.</p>
     </div>
     <div class="card">
       <span class="c-tag">No imputable</span>
@@ -908,13 +908,13 @@ E_teo_limitada = ∫ min(P_dc · η, P_ac_nom, P_PPC) dt</div>
         <tr><td>1</td><td>String DC · Inversor AC · Planta</td><td>Potencia DC teórica (PVWatts), residual absoluto y normalizado, corriente teórica, coeficiente de variación entre strings, potencia AC teórica, potencia de planta con pérdidas de BOS, PR instantáneo</td><td><span class="st-dot on">2 activas</span></td></tr>
         <tr><td>2</td><td>Trackers</td><td>Ángulo teórico, factor de pérdida por desalineación, confirmación cruzada de anomalía, impacto económico</td><td><span class="st-dot av">Disponible</span></td></tr>
         <tr><td>3</td><td>Curva I-V</td><td>Modelo de un diodo con solver Newton-Raphson</td><td><span class="st-dot av">Disponible</span></td></tr>
-        <tr><td>4</td><td>SPD — diagnóstico avanzado</td><td>Disponibilidad Anexo 9, potencia de referencia P40-P90, detección de rendimiento parcial, performance index y score de string, disponibilidad de trackers Anexo 12</td><td><span class="st-dot av">Disponible</span></td></tr>
+        <tr><td>4</td><td>SPD — diagnóstico avanzado</td><td>Disponibilidad de energía contractual, potencia de referencia P40-P90, detección de rendimiento parcial, performance index y score de string, disponibilidad técnica de trackers</td><td><span class="st-dot av">Disponible</span></td></tr>
         <tr><td>5</td><td>CMMS</td><td>MTBF, MTTR, disponibilidad técnica, revenue at risk, ratio correctivo/preventivo</td><td><span class="st-dot pl">Planificada</span></td></tr>
       </tbody>
     </table>
   </div>
 
-  <p>Las ecuaciones del capítulo 5 cierran el círculo entre las dos mitades de la plataforma: <span class="mono">A = MTBF / (MTBF + MTTR)</span> mide la fiabilidad del equipo desde las órdenes de trabajo, mientras el Anexo 9 mide la disponibilidad desde la telemetría. Que las dos no cuadren suele señalar fallas que nadie llegó a registrar, o partes cerrados sin intervención real.</p>
+  <p>Las ecuaciones del capítulo 5 cierran el círculo entre las dos mitades de la plataforma: <span class="mono">A = MTBF / (MTBF + MTTR)</span> mide la fiabilidad del equipo desde las órdenes de trabajo, mientras el cálculo contractual mide la disponibilidad desde la telemetría. Que las dos no cuadren suele señalar fallas que nadie llegó a registrar, o partes cerrados sin intervención real.</p>
 </section>
 
 <!-- ══════════════ 11 ══════════════ -->
@@ -1006,7 +1006,7 @@ P_ac   = min(P_dc · r_AC/DC, P_ac_nominal)            (con recorte)</div>
         <tr><td>Catálogo de KPIs y fórmulas versionadas</td><td><span class="st-dot on">En producción</span></td><td>15 KPIs y 8 fórmulas por defecto, sembradas automáticamente.</td></tr>
         <tr><td>Parámetros con vigencia y adjuntos</td><td><span class="st-dot on">En producción</span></td><td>CRUD completo, duplicado de configuraciones y limpieza de archivos.</td></tr>
         <tr><td>PR · EPI · SY · disponibilidad</td><td><span class="st-dot on">En producción</span></td><td>Motor de agregación por planta, CT e inversor.</td></tr>
-        <tr><td>Anexo 9 · clipping · modelo físico</td><td><span class="st-dot on">En producción</span></td><td>Servicios dedicados con endpoints propios y persistencia de corridas.</td></tr>
+        <tr><td>Disponibilidad contractual · clipping · modelo físico</td><td><span class="st-dot on">En producción</span></td><td>Servicios dedicados con endpoints propios y persistencia de corridas.</td></tr>
         <tr><td>Semántica «sin datos» y monitor de cobertura</td><td><span class="st-dot on">En producción</span></td><td>Con pruebas automatizadas.</td></tr>
         <tr><td>Motor de corridas del módulo de diagnóstico</td><td><span class="st-dot av">Parcial</span></td><td>Hoy persiste energía real y specific yield por día; el resto de KPIs del catálogo se sirve desde el motor de agregación, no desde la corrida. Consolidar ambos caminos es el siguiente paso.</td></tr>
         <tr><td>Curvas I-V y trackers</td><td><span class="st-dot av">Construido</span></td><td>CRUD, comparación y explorador visual listos; dependen de datos de campo por planta.</td></tr>
