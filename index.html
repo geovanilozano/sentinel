@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<meta name="description" content="Documento tecnico de la plataforma Sentinel/SAMS: arquitectura, gobierno de datos e implementacion matematica de PR, EPI, disponibilidad Anexo 9 y diagnostico energetico.">
+<meta name="description" content="Documento tecnico de la plataforma Sentinel/SAMS: modulos, arquitectura, gobierno de datos e implementacion matematica de PR, EPI, disponibilidad Anexo 9 y diagnostico energetico.">
 <meta name="color-scheme" content="light dark">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%E2%98%80%EF%B8%8F%3C/text%3E%3C/svg%3E">
 <title>Plataforma Sentinel</title>
@@ -358,7 +358,7 @@ footer{
   <h1>Arquitectura, datos y motor de cálculo</h1>
   <p class="lede">Cómo entra la telemetría de una planta fotovoltaica, qué reglas la gobiernan y con qué fórmulas se calculan el PR, la disponibilidad y el diagnóstico que hay que sostener frente a un contrato de O&amp;M.</p>
   <div class="meta-row">
-    <span><b>Alcance</b> · 3 servicios · 54 módulos · 66 entidades</span>
+    <span><b>Alcance</b> · 3 servicios · 53 módulos · 66 entidades</span>
     <span><b>Adquisición</b> · Modbus TCP / IEC 60870-5-104 / API</span>
     <span><b>Resolución</b> · 5 min</span>
     <span><b>Normas</b> · IEC 61724-1 · Anexo 9 · Anexo 12</span>
@@ -369,17 +369,19 @@ footer{
   <p class="toc-label">Contenido</p>
   <ol>
     <li><a href="#s1"><span>01</span>La plataforma en una página</a></li>
-    <li><a href="#s2"><span>02</span>Cadena del dato</a></li>
-    <li><a href="#s3"><span>03</span>Gobierno de datos</a></li>
-    <li><a href="#s4"><span>04</span>Calidad del dato</a></li>
-    <li><a href="#s5"><span>05</span>Modelo de datos del diagnóstico</a></li>
-    <li><a href="#s6"><span>06</span>Motor matemático</a></li>
-    <li><a href="#s7"><span>07</span>Disponibilidad</a></li>
-    <li><a href="#s8"><span>08</span>Pérdidas y modelo físico</a></li>
-    <li><a href="#s9"><span>09</span>Diagnóstico y causa raíz</a></li>
-    <li><a href="#s10"><span>10</span>Catálogo de ecuaciones</a></li>
-    <li><a href="#s11"><span>11</span>Ejecución y entregables</a></li>
-    <li><a href="#s12"><span>12</span>Estado real</a></li>
+    <li><a href="#s2"><span>02</span>Módulos de la plataforma</a></li>
+    <li><a href="#s3"><span>03</span>Cadena del dato</a></li>
+    <li><a href="#s4"><span>04</span>Gobierno de datos</a></li>
+    <li><a href="#s5"><span>05</span>Calidad del dato</a></li>
+    <li><a href="#s6"><span>06</span>Modelo de datos del diagnóstico</a></li>
+    <li><a href="#s7"><span>07</span>Motor matemático</a></li>
+    <li><a href="#s8"><span>08</span>Disponibilidad</a></li>
+    <li><a href="#s9"><span>09</span>Pérdidas y modelo físico</a></li>
+    <li><a href="#s10"><span>10</span>Diagnóstico y causa raíz</a></li>
+    <li><a href="#s11"><span>11</span>Catálogo de ecuaciones</a></li>
+    <li><a href="#s12"><span>12</span>Ejecución y entregables</a></li>
+    <li><a href="#s13"><span>13</span>Integraciones y entornos</a></li>
+    <li><a href="#s14"><span>14</span>Estado real</a></li>
   </ol>
 </nav>
 
@@ -415,9 +417,75 @@ footer{
   </div>
 </section>
 
-<!-- ══════════════ 2 ══════════════ -->
+<!-- ══════════════ NUEVA · MODULOS ══════════════ -->
 <section id="s2">
   <span class="sec-num">02</span>
+  <h2>Módulos de la plataforma</h2>
+  <p class="intro">El diagnóstico energético que ocupa el grueso de este documento es una parte del producto. Estos son los demás bloques. La escala del backend que los sostiene: 53 módulos, 66 entidades y 52 controladores.</p>
+
+  <div class="tw">
+    <table class="data">
+      <thead><tr><th>Módulo</th><th>Qué resuelve</th><th>Detalle</th></tr></thead>
+      <tbody>
+        <tr><td>Vista general</td><td>Estado de todo el parque en una pantalla, con acceso al análisis por planta</td><td>Condiciones meteorológicas, eficiencia, adaptadores por planta y configuración desde la misma vista</td></tr>
+        <tr><td>Monitorización</td><td>Operación en vivo por nivel de la jerarquía</td><td>Unidades de potencia, zonas, edición de strings, vista satelital, diagrama unifilar e historiales por inversor, string y tracker</td></tr>
+        <tr><td>Trackers</td><td>Seguimiento solar con umbral de alarma propio</td><td>Inclinación objetivo contra real, desviación de elevación (&gt; 2° es alarma), mapa de calor mensual y disponibilidad Anexo 12</td></tr>
+        <tr><td>Gemelo digital</td><td>El layout real de la planta con valores vivos encima</td><td>Cada punto se enlaza a una señal por <em class="term">reg_ca</em> y pinta su estado: normal, alerta, sin producción, sin señal o sin configurar. Coordenadas versionadas con snapshots restaurables</td></tr>
+        <tr><td>Señales y SCADA</td><td>Lectura y mantenimiento del mapeo de señales</td><td>11 endpoints de consulta (valores, series, grupos de inversores, planta ahora, planta hoy), escalado de señales en caliente y plantillas de columnas reutilizables</td></tr>
+        <tr><td>Gestión de activos</td><td>Inventario técnico y su hoja de vida</td><td>Equipos, componentes, categorías, ubicaciones, unidades y constantes por planta y año, con dashboard y vista de mapa</td></tr>
+        <tr><td>Mantenimiento (CMMS)</td><td>El trabajo que se deriva de todo lo anterior</td><td>Tickets, órdenes de trabajo, preventivo, repuestos con punto de reorden, herramientas con órdenes de préstamo y reposición, proveedores, compras multimoneda y seguimiento de procedimientos</td></tr>
+        <tr><td>Biblioteca técnica</td><td>Documentación que el técnico necesita en sitio</td><td>Manuales, procedimientos, formatos y plantillas, con constructor de plantillas y campos propios</td></tr>
+        <tr><td>Alertas y eventos</td><td>Detección sin intervención humana</td><td>Recorre los registros SCADA y crea eventos de inversor, estado y sensor, calculando tiempo de inactividad y energía perdida. Admite alta manual y asignación a responsable</td></tr>
+        <tr><td>Informes y Data Studio</td><td>Salida hacia dirección y hacia el inversionista</td><td>Visor de Excel embebido, informes personalizados, tableros Power BI, conexión de API externa y exportación a Excel, PDF, ZIP y GeoTIFF</td></tr>
+        <tr><td>Administración</td><td>Quién entra y qué puede hacer</td><td>Usuarios, roles, permisos granulares, empresas, firma digital (flujo administrativo y personal) y sembradores para dar de alta una empresa nueva</td></tr>
+        <tr><td>Notificaciones</td><td>Aviso en tiempo real</td><td>WebSocket con salas por usuario además de difusión general, con página propia también en la app de campo</td></tr>
+        <tr><td>Asistente Sentinel</td><td>Consulta en lenguaje natural sobre el plano</td><td>Modelo <span class="mono">claude-haiku-4-5</span> con los umbrales de la plataforma en su contexto; distingue suciedad, sombras, fallo de módulo, fallo de string y clipping</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>App de campo</h3>
+  <p>Una aplicación instalable para el técnico, dentro del mismo proyecto y bajo la ruta <span class="mono">/m</span>. No es una vista reducida del escritorio: está construida para trabajar sin cobertura, que es la condición normal en una planta.</p>
+
+  <div class="cards">
+    <div class="card">
+      <span class="c-tag">19 pantallas</span>
+      <h4>Cobertura funcional</h4>
+      <p>Órdenes de trabajo con ejecución en campo y alta, tickets, órdenes de compra, equipos, repuestos, biblioteca, cronograma preventivo, monitoreo, notificaciones, búsqueda global y panel de sincronización.</p>
+    </div>
+    <div class="card">
+      <span class="c-tag">Escritura sin red</span>
+      <h4>Cola offline real</h4>
+      <p>Las acciones se encolan en IndexedDB y se sincronizan al recuperar señal. La cola persiste incluso las fotos adjuntas, no solo los formularios.</p>
+    </div>
+    <div class="card">
+      <span class="c-tag">Concurrencia</span>
+      <h4>Cerrojo entre pestañas</h4>
+      <p>Un bloqueo de ámbito origen impide que dos pestañas de la misma sesión suban la cola a la vez. En navegadores antiguos degrada a un guardia por pestaña.</p>
+    </div>
+    <div class="card">
+      <span class="c-tag">Reintentos</span>
+      <h4>Política con causa</h4>
+      <p>Distingue el fallo de red, que reintenta, del rechazo del servidor, que detiene y muestra el motivo. Antes de reenviar un alta comprueba por clave natural que no haya llegado ya.</p>
+    </div>
+    <div class="card">
+      <span class="c-tag">Captura</span>
+      <h4>Cámara y firma</h4>
+      <p>Escaneo de QR y códigos de barras con la cámara para saltar directo a la orden o al equipo, y firma digital sobre la pantalla táctil al cerrar el trabajo.</p>
+    </div>
+    <div class="card">
+      <span class="c-tag">Tablet</span>
+      <h4>Lista y detalle</h4>
+      <p>Desde 1024 px pasa a maestro-detalle con rail lateral. Objetivos táctiles de 44 px verificados por prueba automatizada, sobre 15 suites en total.</p>
+    </div>
+  </div>
+
+  <p>La aplicación está traducida a los mismos <strong>cuatro idiomas</strong> que el escritorio: español, inglés, italiano y rumano.</p>
+</section>
+
+<!-- ══════════════ 2 ══════════════ -->
+<section id="s3">
+  <span class="sec-num">03</span>
   <h2>La cadena del dato</h2>
   <p class="intro">Cuatro etapas con responsabilidades separadas. El servicio que habla con el campo se limita a capturar y guardar; el frontend consulta resultados ya calculados y persistidos, sin ejecutar ninguna ecuación energética.</p>
 
@@ -472,8 +540,8 @@ footer{
 </section>
 
 <!-- ══════════════ 3 ══════════════ -->
-<section id="s3">
-  <span class="sec-num">03</span>
+<section id="s4">
+  <span class="sec-num">04</span>
   <h2>Gobierno de datos</h2>
   <p class="intro">Cualquier número que muestre la plataforma tiene que poder reconstruirse después: con qué señal se calculó, con qué versión de la fórmula, con qué parámetros vigentes y en qué momento. Todo lo de esta sección existe para sostener esa reconstrucción.</p>
 
@@ -481,7 +549,7 @@ footer{
   <ul>
     <li><strong>Multiempresa (multi-tenant).</strong> Aislamiento por <em class="term">empresa_id</em> aplicado en la capa de servicio, con guard de tenant en cada petición. Rol de SuperAdmin con acceso cross-tenant explícito.</li>
     <li><strong>RBAC granular.</strong> Usuario → roles → permisos, más permisos directos al usuario. Validación por decorador en cada endpoint.</li>
-    <li><strong>Auditoría a nivel de base de datos.</strong> Cada petición fija <em class="term">app.user_id</em> en la sesión de PostgreSQL, de modo que los triggers de auditoría atribuyen cada cambio a un usuario real.</li>
+    <li><strong>Auditoría a nivel de base de datos.</strong> Cada petición fija <em class="term">app.user_id</em> en la sesión de PostgreSQL mediante <span class="mono">set_config()</span> con parámetro vinculado, de modo que los triggers de auditoría atribuyen cada cambio a un usuario real sin interpolar el identificador en el texto de la consulta.</li>
     <li><strong>Auditoría de acceso.</strong> Registro de inicios de sesión <em>y de los intentos fallidos con su motivo</em>, con IP, user-agent y duración de sesión. Consultable solo con permiso propio.</li>
     <li><strong>Tokens de terceros.</strong> Acceso de clientes externos al servicio de adquisición con expiración y modo de solo lectura.</li>
   </ul>
@@ -533,8 +601,8 @@ norma       : IEC 61724-1</div>
 </section>
 
 <!-- ══════════════ 4 ══════════════ -->
-<section id="s4">
-  <span class="sec-num">04</span>
+<section id="s5">
+  <span class="sec-num">05</span>
   <h2>Calidad del dato</h2>
   <p class="intro">Qué hace el motor cuando el dato no llega. Es la parte del diseño que más problemas evita en operación: un indicador que rellena los huecos por su cuenta acaba escondiendo justo lo que había que ver.</p>
 
@@ -556,8 +624,8 @@ norma       : IEC 61724-1</div>
 </section>
 
 <!-- ══════════════ 5 ══════════════ -->
-<section id="s5">
-  <span class="sec-num">05</span>
+<section id="s6">
+  <span class="sec-num">06</span>
   <h2>Modelo de datos del diagnóstico</h2>
   <p class="intro">Siete tablas sostienen todo el dominio. Están separadas en cuatro roles — <em>definición</em>, <em>configuración</em>, <em>ejecución</em> y <em>resultado</em> — y de esa separación depende que el sistema se pueda auditar.</p>
 
@@ -580,8 +648,8 @@ norma       : IEC 61724-1</div>
 </section>
 
 <!-- ══════════════ 6 ══════════════ -->
-<section id="s6">
-  <span class="sec-num">06</span>
+<section id="s7">
+  <span class="sec-num">07</span>
   <h2>El motor matemático</h2>
   <p class="intro">Tres insumos —energía real, irradiación y energía teórica— de los que salen PR, EPI y specific yield. El resto de la sección afina esos denominadores para casos concretos: temperatura, bifacialidad, clipping y condiciones meteorológicas reales.</p>
 
@@ -675,8 +743,8 @@ Factor clima   = E_Expected / E_sim  × 100 %   → ¿cuánto de la diferencia e
 </section>
 
 <!-- ══════════════ 7 ══════════════ -->
-<section id="s7">
-  <span class="sec-num">07</span>
+<section id="s8">
+  <span class="sec-num">08</span>
   <h2>Disponibilidad</h2>
   <p class="intro">El indicador que se factura y el que se termina discutiendo en una revisión contractual. La plataforma calcula dos, y conviene no mezclarlas: una mide tiempo de servicio y la otra energía dejada de producir.</p>
 
@@ -726,8 +794,8 @@ Factor clima   = E_Expected / E_sim  × 100 %   → ¿cuánto de la diferencia e
 </section>
 
 <!-- ══════════════ 8 ══════════════ -->
-<section id="s8">
-  <span class="sec-num">08</span>
+<section id="s9">
+  <span class="sec-num">09</span>
   <h2>Pérdidas y modelo físico</h2>
   <p class="intro">Un déficit de 40 MWh en el mes es un dato incompleto mientras no se sepa que 22 vienen de curtailment, 11 de indisponibilidad y 7 de temperatura. Solo con la descomposición se decide dónde intervenir y qué es imputable a quién.</p>
 
@@ -797,8 +865,8 @@ E_teo_limitada = ∫ min(P_dc · η, P_ac_nom, P_PPC) dt</div>
 </section>
 
 <!-- ══════════════ 9 ══════════════ -->
-<section id="s9">
-  <span class="sec-num">09</span>
+<section id="s10">
+  <span class="sec-num">10</span>
   <h2>Diagnóstico y causa raíz</h2>
   <p class="intro">La capa que convierte indicadores en hipótesis de trabajo. Un rendimiento bajo a nivel de planta da poca información por sí solo; localizarlo en tres strings colgados del mismo tracker ya es un parte de trabajo. De eso se ocupa esta capa: correlacionar niveles.</p>
 
@@ -820,6 +888,7 @@ E_teo_limitada = ∫ min(P_dc · η, P_ac_nom, P_PPC) dt</div>
 
   <h3>Vigilancia continua</h3>
   <p>Además de las corridas, hay un monitor externo que cada 10 minutos comprueba, <strong>cuando hay sol</strong> (POA ≥ 150 W/m²), la potencia máxima de los últimos 30 minutos por centro de transformación. Si cae por debajo del umbral, marca el CT como caído y avisa por mensajería, con anti-spam de estado: un aviso al caer y otro al recuperarse.</p>
+  <p>Desde agosto de 2026 avisa también cuando <strong>no llega telemetría en absoluto</strong>. Antes, un corte de ingesta dejaba al monitor en silencio, que es indistinguible de una planta sana: el mismo problema que resuelve la regla de «sin datos» de la sección 05, aplicado a la vigilancia externa.</p>
   <p>Nació de un incidente real: un CT dejó de generar y el PR de planta se desplomó a ~40 % sin que nadie lo notara durante días.</p>
 
   <h3>Asistente de diagnóstico</h3>
@@ -827,8 +896,8 @@ E_teo_limitada = ∫ min(P_dc · η, P_ac_nom, P_PPC) dt</div>
 </section>
 
 <!-- ══════════════ 10 ══════════════ -->
-<section id="s10">
-  <span class="sec-num">10</span>
+<section id="s11">
+  <span class="sec-num">11</span>
   <h2>Catálogo de ecuaciones</h2>
   <p class="intro">El catálogo completo es navegable dentro del producto: cada ecuación con su expresión, sus variables, su unidad, la norma que la respalda y su estado. Cinco capítulos siguiendo la jerarquía física del activo.</p>
 
@@ -849,8 +918,8 @@ E_teo_limitada = ∫ min(P_dc · η, P_ac_nom, P_PPC) dt</div>
 </section>
 
 <!-- ══════════════ 11 ══════════════ -->
-<section id="s11">
-  <span class="sec-num">11</span>
+<section id="s12">
+  <span class="sec-num">12</span>
   <h2>Ejecución y entregables</h2>
 
   <h3>Qué corre solo</h3>
@@ -879,9 +948,53 @@ E_teo_limitada = ∫ min(P_dc · η, P_ac_nom, P_PPC) dt</div>
   </ul>
 </section>
 
+<!-- ══════════════ NUEVA · INTEGRACIONES ══════════════ -->
+<section id="s13">
+  <span class="sec-num">13</span>
+  <h2>Integraciones y entornos</h2>
+  <p class="intro">Con qué sistemas habla la plataforma, y cómo se sostiene una demostración cuando la planta de referencia está incomunicada.</p>
+
+  <div class="tw">
+    <table class="data">
+      <thead><tr><th>Sistema</th><th>Vía</th><th>Para qué</th></tr></thead>
+      <tbody>
+        <tr><td>SCADA de planta</td><td class="mono">Modbus TCP</td><td>Lectura directa de registros del inversor, medidor y meteo</td></tr>
+        <tr><td>SCADA de planta</td><td class="mono">IEC 60870-5-104</td><td>Protocolo de telecontrol eléctrico, con dirección de objeto de información</td></tr>
+        <tr><td>Meteocontrol</td><td class="mono">API + backfill</td><td>Plantas que no exponen SCADA propio, con relleno histórico por rango</td></tr>
+        <tr><td>Open-Meteo</td><td class="mono">API cada 10 min</td><td>Irradiancia de respaldo cuando el piranómetro no es fiable</td></tr>
+        <tr><td>XM</td><td class="mono">API de mercado</td><td>Precios para valorar la energía perdida y el ingreso en riesgo</td></tr>
+        <tr><td>Power BI</td><td class="mono">Tableros embebidos</td><td>Reportes de dirección dentro de Data Studio</td></tr>
+        <tr><td>EX-VIEW</td><td class="mono">Enlace desde ticket</td><td>Informes de termografía asociados a la incidencia</td></tr>
+        <tr><td>SendGrid</td><td class="mono">Correo saliente</td><td>Envío automático del informe de las corridas programadas</td></tr>
+        <tr><td>Supabase</td><td class="mono">Storage</td><td>Adjuntos de parámetros, curvas y documentación</td></tr>
+        <tr><td>Telegram</td><td class="mono">systemd cada 10 min</td><td>Aviso de centro de transformación caído o sin telemetría</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Entorno de demostración</h3>
+  <p>Una demostración comercial no puede depender de que la planta de referencia esté comunicando. En agosto de 2026 la planta piloto estuvo ocho días sin comunicación y con un centro de transformación sin generar: quien abría la demostración veía pantallas vacías.</p>
+  <p>Para eso existe un <strong>generador de telemetría simulada</strong> que alimenta el entorno de demostración con datos coherentes. No inventa curvas bonitas: reproduce la misma cadena física que usa el motor de cálculo real.</p>
+
+  <div class="formula">
+    <div class="f-head"><span class="f-name">Cadena del generador</span><span class="chip norm">Misma física que el motor</span></div>
+    <div class="f-eq">posición solar → GHI cielo claro → POA → T_célula → P_dc → P_ac → E_int
+
+T_cell = T_amb + (NMOT − 20)/800 · POA          (NOCT/SAPM simplificado)
+P_dc   = (POA/1000) · P_stc · [1 + β·(T_cell − 25)]   (PVWatts)
+P_ac   = min(P_dc · r_AC/DC, P_ac_nominal)            (con recorte)</div>
+    <div class="f-note">Los KPIs de la demostración salen coherentes por construcción: se calculan con el mismo motor que en producción, sobre datos generados con el mismo modelo.</div>
+  </div>
+
+  <div class="callout rule">
+    <div class="c-title">Aislamiento de la base de datos</div>
+    <p>El generador escribe exclusivamente en una base creada para la demostración, y <strong>se niega a arrancar si la conexión no apunta a ella</strong>. No toca la base de producción ni la que producción comparte. Volver a datos reales no requiere deshacer nada: basta con reapuntar la conexión, y lo simulado queda aparte y se puede borrar sin efecto sobre el resto.</p>
+  </div>
+</section>
+
 <!-- ══════════════ 12 ══════════════ -->
-<section id="s12">
-  <span class="sec-num">12</span>
+<section id="s14">
+  <span class="sec-num">14</span>
   <h2>Estado real de la implementación</h2>
   <p class="intro">Distinguir lo que está en producción de lo que está construido pero no cableado, y de lo que está definido en el catálogo pero aún no se calcula. Esta separación es parte del gobierno del dato.</p>
 
@@ -898,6 +1011,8 @@ E_teo_limitada = ∫ min(P_dc · η, P_ac_nom, P_PPC) dt</div>
         <tr><td>Motor de corridas del módulo de diagnóstico</td><td><span class="st-dot av">Parcial</span></td><td>Hoy persiste energía real y specific yield por día; el resto de KPIs del catálogo se sirve desde el motor de agregación, no desde la corrida. Consolidar ambos caminos es el siguiente paso.</td></tr>
         <tr><td>Curvas I-V y trackers</td><td><span class="st-dot av">Construido</span></td><td>CRUD, comparación y explorador visual listos; dependen de datos de campo por planta.</td></tr>
         <tr><td>KPIs CMMS (MTBF, MTTR)</td><td><span class="st-dot pl">Definido</span></td><td>En el catálogo de ecuaciones; pendiente de conectar al histórico de órdenes.</td></tr>
+        <tr><td>App de campo (PWA)</td><td><span class="st-dot on">En producción</span></td><td>19 pantallas, cola offline con adjuntos, cerrojo entre pestañas y 15 suites de prueba.</td></tr>
+        <tr><td>Entorno de demostración</td><td><span class="st-dot on">En producción</span></td><td>Generador de telemetría con la misma cadena física del motor, aislado en su propia base.</td></tr>
       </tbody>
     </table>
   </div>
