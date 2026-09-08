@@ -54,10 +54,15 @@ cd sentinel
 python -m http.server 8000
 ```
 
-## 🔗 Proyectos relacionados
+## 🔗 La implementación
 
-- **[sams-2.0](https://github.com/geovanilozano/sams-2.0)** — implementación de la plataforma (Turborepo + NestJS + Next.js + TimescaleDB)
-- **[SAMS-ENERGY-DIAGNOSTIC-ENGINE](https://github.com/geovanilozano/SAMS-ENERGY-DIAGNOSTIC-ENGINE)** — microservicio del motor matemático (Python + PVLib)
+El código de la plataforma vive en repositorios privados y no es público. Este
+documento es la parte abierta: describe la arquitectura, el gobierno del dato y
+el motor de cálculo, sin exponer la implementación.
+
+- **Adquisición** — lectura por Modbus TCP e IEC-104, cada 5 minutos
+- **Dominio** — motor de KPIs, catálogo de fórmulas versionadas y modelo físico con PVLib
+- **Aplicación** — panel web y app de campo
 
 ## 📄 Licencia
 
