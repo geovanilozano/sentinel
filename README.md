@@ -29,10 +29,10 @@ permite enviarla a un cliente sin pedirle que instale nada.
 | **Catálogo de ecuaciones** | Las fórmulas, con sus supuestos explícitos |
 | **Ejecución y entregables** | Cómo corre y qué produce |
 | **Integraciones y entornos** | Interfaces externas y despliegue |
-| **Estado real de la implementación** | Qué está construido y qué no |
+| **Alcance de la plataforma** | Las capacidades que cubre el sistema, de la adquisición al entregable |
 
-La última sección es deliberada: el documento distingue lo diseñado de lo
-efectivamente construido, para que sirva como referencia honesta y no como folleto.
+Cada sección explica el mecanismo, no la promesa: las fórmulas del catálogo son
+las que están implementadas, con su norma de referencia.
 
 ## 🏗️ Estructura del repositorio
 
