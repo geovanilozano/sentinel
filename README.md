@@ -2,7 +2,7 @@
 
 [![Documento en vivo](https://img.shields.io/badge/leer-geovanilozano.github.io%2Fsentinel-1f6feb?style=flat-square&logo=github)](https://geovanilozano.github.io/sentinel/)
 [![GitHub Pages](https://img.shields.io/badge/deploy-GitHub%20Pages-222?style=flat-square&logo=githubpages)](https://geovanilozano.github.io/sentinel/)
-[![Licencia MIT](https://img.shields.io/badge/licencia-MIT-green?style=flat-square)](LICENSE)
+[![Material propietario](https://img.shields.io/badge/licencia-propietaria-b45309?style=flat-square)](#-licencia)
 
 > Documento técnico de **Sentinel**, la plataforma de gestión y diagnóstico de
 > activos solares de SAMS Technology: arquitectura, gobierno de datos, modelo de
@@ -61,7 +61,12 @@ python -m http.server 8000
 
 ## 📄 Licencia
 
-MIT — ver [LICENSE](LICENSE).
+**Material propietario de SAMS Technology. Todos los derechos reservados.**
+
+Este documento describe la arquitectura, el gobierno de datos y el motor de
+cálculo de una plataforma comercial, y está elaborado a partir de sus
+repositorios privados. No se concede licencia de uso, copia, modificación ni
+redistribución.
 
 ---
 
