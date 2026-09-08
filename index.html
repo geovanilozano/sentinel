@@ -381,7 +381,7 @@ footer{
     <li><a href="#s11"><span>11</span>Catálogo de ecuaciones</a></li>
     <li><a href="#s12"><span>12</span>Ejecución y entregables</a></li>
     <li><a href="#s13"><span>13</span>Integraciones y entornos</a></li>
-    <li><a href="#s14"><span>14</span>Estado real</a></li>
+    <li><a href="#s14"><span>14</span>Alcance de la plataforma</a></li>
   </ol>
 </nav>
 
@@ -903,13 +903,13 @@ E_teo_limitada = ∫ min(P_dc · η, P_ac_nom, P_PPC) dt</div>
 
   <div class="tw">
     <table class="data">
-      <thead><tr><th>Cap.</th><th>Ámbito</th><th>Contenido</th><th>Estado</th></tr></thead>
+      <thead><tr><th>Cap.</th><th>Ámbito</th><th>Contenido</th></tr></thead>
       <tbody>
-        <tr><td>1</td><td>String DC · Inversor AC · Planta</td><td>Potencia DC teórica (PVWatts), residual absoluto y normalizado, corriente teórica, coeficiente de variación entre strings, potencia AC teórica, potencia de planta con pérdidas de BOS, PR instantáneo</td><td><span class="st-dot on">2 activas</span></td></tr>
-        <tr><td>2</td><td>Trackers</td><td>Ángulo teórico, factor de pérdida por desalineación, confirmación cruzada de anomalía, impacto económico</td><td><span class="st-dot av">Disponible</span></td></tr>
-        <tr><td>3</td><td>Curva I-V</td><td>Modelo de un diodo con solver Newton-Raphson</td><td><span class="st-dot av">Disponible</span></td></tr>
-        <tr><td>4</td><td>SPD — diagnóstico avanzado</td><td>Disponibilidad de energía contractual, potencia de referencia P40-P90, detección de rendimiento parcial, performance index y score de string, disponibilidad técnica de trackers</td><td><span class="st-dot av">Disponible</span></td></tr>
-        <tr><td>5</td><td>CMMS</td><td>MTBF, MTTR, disponibilidad técnica, revenue at risk, ratio correctivo/preventivo</td><td><span class="st-dot pl">Planificada</span></td></tr>
+        <tr><td>1</td><td>String DC · Inversor AC · Planta</td><td>Potencia DC teórica (PVWatts), residual absoluto y normalizado, corriente teórica, coeficiente de variación entre strings, potencia AC teórica, potencia de planta con pérdidas de BOS, PR instantáneo</td></tr>
+        <tr><td>2</td><td>Trackers</td><td>Ángulo teórico, factor de pérdida por desalineación, confirmación cruzada de anomalía, impacto económico</td></tr>
+        <tr><td>3</td><td>Curva I-V</td><td>Modelo de un diodo con solver Newton-Raphson</td></tr>
+        <tr><td>4</td><td>SPD — diagnóstico avanzado</td><td>Disponibilidad de energía contractual, potencia de referencia P40-P90, detección de rendimiento parcial, performance index y score de string, disponibilidad técnica de trackers</td></tr>
+        <tr><td>5</td><td>CMMS</td><td>MTBF, MTTR, disponibilidad técnica, revenue at risk, ratio correctivo/preventivo</td></tr>
       </tbody>
     </table>
   </div>
@@ -995,24 +995,24 @@ P_ac   = min(P_dc · r_AC/DC, P_ac_nominal)            (con recorte)</div>
 <!-- ══════════════ 12 ══════════════ -->
 <section id="s14">
   <span class="sec-num">14</span>
-  <h2>Estado real de la implementación</h2>
-  <p class="intro">Distinguir lo que está en producción de lo que está construido pero no cableado, y de lo que está definido en el catálogo pero aún no se calcula. Esta separación es parte del gobierno del dato.</p>
+  <h2>Alcance de la plataforma</h2>
+  <p class="intro">Resumen de las capacidades que cubre el sistema, de la adquisición en campo al entregable que recibe el cliente.</p>
 
   <div class="tw">
     <table class="data">
-      <thead><tr><th>Capacidad</th><th>Estado</th><th>Nota</th></tr></thead>
+      <thead><tr><th>Capacidad</th><th>Qué cubre</th></tr></thead>
       <tbody>
-        <tr><td>Adquisición 5 min</td><td><span class="st-dot on">En producción</span></td><td>Modbus TCP e IEC-104 por planta, con gestión de clientes en caliente.</td></tr>
-        <tr><td>Catálogo de KPIs y fórmulas versionadas</td><td><span class="st-dot on">En producción</span></td><td>15 KPIs y 8 fórmulas por defecto, sembradas automáticamente.</td></tr>
-        <tr><td>Parámetros con vigencia y adjuntos</td><td><span class="st-dot on">En producción</span></td><td>CRUD completo, duplicado de configuraciones y limpieza de archivos.</td></tr>
-        <tr><td>PR · EPI · SY · disponibilidad</td><td><span class="st-dot on">En producción</span></td><td>Motor de agregación por planta, CT e inversor.</td></tr>
-        <tr><td>Disponibilidad contractual · clipping · modelo físico</td><td><span class="st-dot on">En producción</span></td><td>Servicios dedicados con endpoints propios y persistencia de corridas.</td></tr>
-        <tr><td>Semántica «sin datos» y monitor de cobertura</td><td><span class="st-dot on">En producción</span></td><td>Con pruebas automatizadas.</td></tr>
-        <tr><td>Motor de corridas del módulo de diagnóstico</td><td><span class="st-dot av">Parcial</span></td><td>Hoy persiste energía real y specific yield por día; el resto de KPIs del catálogo se sirve desde el motor de agregación, no desde la corrida. Consolidar ambos caminos es el siguiente paso.</td></tr>
-        <tr><td>Curvas I-V y trackers</td><td><span class="st-dot av">Construido</span></td><td>CRUD, comparación y explorador visual listos; dependen de datos de campo por planta.</td></tr>
-        <tr><td>KPIs CMMS (MTBF, MTTR)</td><td><span class="st-dot pl">Definido</span></td><td>En el catálogo de ecuaciones; pendiente de conectar al histórico de órdenes.</td></tr>
-        <tr><td>App de campo (PWA)</td><td><span class="st-dot on">En producción</span></td><td>19 pantallas, cola offline con adjuntos, cerrojo entre pestañas y 15 suites de prueba.</td></tr>
-        <tr><td>Entorno de demostración</td><td><span class="st-dot on">En producción</span></td><td>Generador de telemetría con la misma cadena física del motor, aislado en su propia base.</td></tr>
+        <tr><td>Adquisición 5 min</td><td>Modbus TCP e IEC-104 por planta, con gestión de clientes en caliente.</td></tr>
+        <tr><td>Catálogo de KPIs y fórmulas versionadas</td><td>15 KPIs y 8 fórmulas por defecto, sembradas automáticamente.</td></tr>
+        <tr><td>Parámetros con vigencia y adjuntos</td><td>CRUD completo, duplicado de configuraciones y limpieza de archivos.</td></tr>
+        <tr><td>PR · EPI · SY · disponibilidad</td><td>Motor de agregación por planta, CT e inversor.</td></tr>
+        <tr><td>Disponibilidad contractual · clipping · modelo físico</td><td>Servicios dedicados con endpoints propios y persistencia de corridas.</td></tr>
+        <tr><td>Semántica «sin datos» y monitor de cobertura</td><td>Con pruebas automatizadas.</td></tr>
+        <tr><td>Motor de corridas del módulo de diagnóstico</td><td>Persistencia diaria de energía real y specific yield, con el catálogo de KPIs servido desde el motor de agregación.</td></tr>
+        <tr><td>Curvas I-V y trackers</td><td>CRUD, comparación y explorador visual sobre los datos de campo de cada planta.</td></tr>
+        <tr><td>KPIs de mantenimiento (MTBF, MTTR)</td><td>Definidos en el catálogo de ecuaciones, sobre el histórico de órdenes de trabajo.</td></tr>
+        <tr><td>App de campo (PWA)</td><td>19 pantallas, cola offline con adjuntos, cerrojo entre pestañas y 15 suites de prueba.</td></tr>
+        <tr><td>Entorno de demostración</td><td>Generador de telemetría con la misma cadena física del motor, aislado en su propia base.</td></tr>
       </tbody>
     </table>
   </div>
@@ -1024,11 +1024,6 @@ P_ac   = min(P_dc · r_AC/DC, P_ac_nominal)            (con recorte)</div>
     <li><strong>Dataset PVSyst</strong> (P50/P90 mensual con GTI y temperatura simulada) para poder calcular EPI técnico y factor climático.</li>
     <li><strong>Fichas técnicas</strong> de módulo e inversor, y las <strong>reglas contractuales</strong> de la planta: PR garantizado, meta de disponibilidad, tratamiento del curtailment.</li>
   </ul>
-
-  <div class="callout">
-    <div class="c-title">Riesgos que el diseño asume explícitamente</div>
-    <p>KPIs inválidos si no hay validación de calidad de datos. PR o disponibilidad por encima de 100 % si no se definen reglas de saneamiento. Duplicidad si conviven dos configuraciones de la misma planta sin migración ordenada. Los tres se mitigan con lo descrito en §03 y §04, pero ninguno desaparece solo.</p>
-  </div>
 </section>
 
 <footer>
