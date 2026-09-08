@@ -347,6 +347,27 @@ footer{
   .formula,.callout,.card,.stage,.tw{break-inside:avoid}
   footer{grid-column:1 !important}
 }
+
+/* ── sello de autoria ────────────────────────────────── */
+.sello{
+  display:flex;align-items:center;gap:15px;
+  margin:0 0 20px;padding-bottom:20px;border-bottom:1px solid var(--line-soft)
+}
+.sello-marca{width:46px;height:46px;flex:none;border-radius:10px;box-shadow:var(--shadow)}
+.sello-txt p{margin:0}
+.sello-nombre{
+  font-family:Archivo,sans-serif;font-weight:600;font-size:14.5px;color:var(--ink);
+  letter-spacing:-.005em
+}
+.sello-rol{
+  font-family:"Source Serif 4",Georgia,serif;font-size:12.5px;color:var(--ink-2);
+  margin-top:2px !important;line-height:1.45
+}
+.sello-nota{
+  font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--muted);margin-top:6px !important
+}
+@media(max-width:520px){ .sello{gap:12px} .sello-marca{width:40px;height:40px} }
 </style>
 </head>
 <body>
@@ -1027,7 +1048,21 @@ P_ac   = min(P_dc · r_AC/DC, P_ac_nominal)            (con recorte)</div>
 </section>
 
 <footer>
-  Documento técnico de plataforma · Sentinel / SAMS<br>
+    <div class="sello">
+    <svg class="sello-marca" viewBox="0 0 100 100" role="img" aria-label="Sello de autoría de Geovani Lozano">
+      <rect width="100" height="100" rx="19" fill="#0F172A"/>
+      <text x="50" y="47" text-anchor="middle" dominant-baseline="central"
+            font-family="Archivo, Helvetica Neue, Arial, sans-serif" font-weight="700"
+            font-size="42" letter-spacing="-1" fill="#FFFFFF">GL</text>
+      <rect x="34" y="70" width="32" height="7" rx="3.5" fill="#F59E0B"/>
+    </svg>
+    <div class="sello-txt">
+      <p class="sello-nombre">Geovani Lozano</p>
+      <p class="sello-rol">Ingeniero Electromecánico · MSc en Ingeniería Matemática y Computacional</p>
+      <p class="sello-nota">Documento técnico · Plataforma Sentinel · 2026</p>
+    </div>
+  </div>
+Documento técnico de plataforma · Sentinel / SAMS<br>
   Elaborado a partir del código de los tres repositorios: adquisición, dominio y aplicación.<br>
   Las fórmulas reproducen las expresiones implementadas y su norma de referencia.
 </footer>
